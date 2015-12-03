@@ -1,5 +1,7 @@
 package bundle_pricing.lab
 
+import StoreEntities._
+
 // Product or Bundle
 trait CartItem {
     def id: String
@@ -18,7 +20,11 @@ trait CartService {
     def addProd(prod: Product, cart: Cart): Cart // Bundles are not packaged together
 }
 
-object StoreService {
+trait StoreA
+
+trait StoreService
+
+object Store extends StoreService {
     def addProd(prod: Product, store: Store): Store = {
        store.copy(prods = prod :: store.prods)
     }
@@ -28,27 +34,30 @@ object StoreService {
     }
 }
 
-case class Store(
-    prods: List[Product] = Nil,
-    bundles: List[CartBundle] = Nil 
-)
+object StoreEntities {
+    
+    case class Store(
+        prods: List[Product] = Nil,
+        bundles: List[CartBundle] = Nil 
+    )
 
-case class Product(
-    id: String, 
-    price: Double
-) extends CartItem
+    case class Product(
+        id: String, 
+        price: Double
+    ) extends CartItem
+    
+    case class Bundle(
+        id: String, 
+        price: Double, 
+        prods: List[Product]
+    ) extends CartItem
 
-case class Bundle(
-    id: String, 
-    price: Double, 
-    prods: List[Product]
-) extends CartItem
-
-case class Cart(
-    prods: List[Product] = Nil,
-    bundles: List[CartBundle] = Nil,
-    total: Double = 0.0
-)
+    case class Cart(
+        prods: List[Product] = Nil,
+        bundles: List[CartBundle] = Nil,
+        total: Double = 0.0
+    )
+}
 
 object Shopping extends CartService {
 
