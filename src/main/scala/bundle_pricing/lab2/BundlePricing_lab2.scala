@@ -44,7 +44,7 @@ case class FlatPrice(flat: Double) extends Discount
 
 // Aggregation of required items, with applied discount
 case class Bundle(
-    qualifier: List[Item],
+    qualifier: List[Bundleable],
     discount: AppliedHow,
     price: Double = 0
 ) extends Bundleable
@@ -59,16 +59,16 @@ case class AppliedHow(
 object BundleService {
     
     // Item has quantity
-    def qtyForPrice(qualifier: Item, price: Double): Bundleable = {
+    def qtyForPrice(qualifier: Item, price: Double): Bundle = {
         val discount = AppliedHow(FlatPrice(price), qualifier)
         Bundle(List(qualifier), discount)
     }
     
     def multiPart(
-        otherParts: List[Item],
+        otherParts: List[Bundleable],
         discount: Discount,
-        appliedTo: Item
-    ): Bundleable = {
+        appliedTo: Bundleable
+    ): Bundle = {
         // TODO: Verify/Require that appliedTo exists in parts
         val appHow = AppliedHow(discount, appliedTo)
         val allParts = appliedTo :: otherParts
