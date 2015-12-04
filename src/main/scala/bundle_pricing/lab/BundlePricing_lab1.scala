@@ -1,30 +1,25 @@
 package bundle_pricing.lab
 
-import StoreEntities._
+import Entities._
 
 // Product or Bundle
-trait CartItem {
+trait Item {
     def id: String
     def price: Double
 }
 
 // Groupings of Products with special price
-trait CartBundle extends CartItem {
+trait Bundle extends Item {
     def prods: List[Option[Product]]
 }
 
-trait CartService {
-    //def priceGoupings: List[List[CartItem]]
+trait CatalogService {
     def getCart(): Cart
     def minCartTotal(): Double // determine cart with min total
     def addProd(prod: Product, cart: Cart): Cart // Bundles are not packaged together
 }
 
-trait StoreA
-
-trait StoreService
-
-object Store extends StoreService {
+object Catalog {
     def addProd(prod: Product, store: Store): Store = {
        store.copy(prods = prod :: store.prods)
     }
@@ -34,32 +29,32 @@ object Store extends StoreService {
     }
 }
 
-object StoreEntities {
+object Entities {
     
     case class Store(
-        prods: List[Product] = Nil,
-        bundles: List[CartBundle] = Nil 
+        prods: List[Item] = Nil,
+        bundles: List[Bundle] = Nil 
     )
 
     case class Product(
         id: String, 
         price: Double
-    ) extends CartItem
+    ) extends Item
     
     case class Bundle(
         id: String, 
         price: Double, 
         prods: List[Product]
-    ) extends CartItem
+    ) extends Item
 
     case class Cart(
         prods: List[Product] = Nil,
-        bundles: List[CartBundle] = Nil,
+        bundles: List[Bundle] = Nil,
         total: Double = 0.0
     )
 }
 
-object Shopping extends CartService {
+object ShoppingTrip extends CatalogService {
 
     def getCart(): Cart = Cart()
     
