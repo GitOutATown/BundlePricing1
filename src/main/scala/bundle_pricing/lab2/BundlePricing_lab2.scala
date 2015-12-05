@@ -2,11 +2,12 @@ package bundle_pricing.lab2
 
 /**
  * TODO:
+ * Pattern match on bundles: identify the constituent items.
  * Calculate minPrice 
  * Validators: Option/Either/Try
- * print all line items and discounts
- * asynchronous
- * tests
+ * Print all line items and discounts
+ * Asynchronous calls
+ * Tests
  */
 
 case class Item(
@@ -70,9 +71,9 @@ object BundleService {
         appliedTo: Bundleable
     ): Bundle = {
         // TODO: Verify/Require that appliedTo exists in parts
-        val appHow = AppliedHow(discount, appliedTo)
+        val applyHow = AppliedHow(discount, appliedTo)
         val allParts = appliedTo :: otherParts
-        Bundle(allParts, appHow)
+        Bundle(allParts, applyHow)
     }
 }
 
