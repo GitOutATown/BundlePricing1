@@ -15,37 +15,44 @@ package bundle_pricing.lab2.app
 trait Bundleable
 trait Discount
 
-//private[app] case class Item(
-case class Item(
+private[app] case class StoreItem(
     id: String,
-    price: Double,
+    price: Double
+)
+
+private[app] case class CartItem(
+    item: StoreItem,
+    qty: Int
+)
+
+case class BundleItem(
+    item: StoreItem,
     qty: Int
 ) extends Bundleable
 
 case class Cart(
-    items: List[Item]
+    items: List[CartItem]
 )
 
-/*object Item {
-    /*def setQty(item: Item, newQty: Int): Item =
-        item.copy(qty = newQty)*/
-        
-    /*def create(id: String, price: Double, qty: Int): Item = {
-        Item(id, price, qty)
-    }*/
-}*/
+object Item {
+    // InventoryItem factory
+    def apply(id: String, price: Double, qty: Int): CartItem = {
+        val item = StoreItem(id, price)
+        CartItem(item, qty)
+    }
+}
 
 object CartService {
-    def addItem(item: Item, cart: Cart): Cart = {
+    def addItem(item: CartItem, cart: Cart): Cart = {
         cart.copy(items = item :: cart.items)
     }
     
-    def addItems(item: Item, qty: Int, cart: Cart): Cart = {
+    def addItems(item: CartItem, qty: Int, cart: Cart): Cart = {
         val items = List.fill(qty)(item)
         cart.copy(items = items ++ cart.items)
     }
     
-    def addItems(items: List[Item], cart: Cart): Cart =
+    def addItems(items: List[CartItem], cart: Cart): Cart =
         cart.copy(items = cart.items ++ items)
     
     // Calculates minimum price per bundle discounts
@@ -75,8 +82,8 @@ case class AppliedHow(
 // Create Bundles
 object BundleService {
     
-    // Item has quantity
-    def qtyForPrice(qualifier: Item, price: Double): Bundle = {
+    // BundleItem has quantity
+    def qtyForPrice(qualifier: BundleItem, price: Double): Bundle = {
         val discount = AppliedHow(FlatPrice(price), qualifier)
         Bundle(List(qualifier), discount)
     }
