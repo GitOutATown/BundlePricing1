@@ -5,20 +5,30 @@ package bundle_pricing.lab2
  * Pattern match on bundles: identify the constituent items.
  * Calculate minPrice 
  * Validators: Option/Either/Try
+ * Item factory with unique id generator
+ * Protect API with private declarations
  * Print all line items and discounts
  * Asynchronous calls
  * Tests
  */
 
+trait Bundleable
+trait Discount
+
 case class Item(
     id: String,
     price: Double,
-    qty: Int = 1
+    qty: Int
 ) extends Bundleable
 
 case class Cart(
     items: List[Item]
 )
+
+object Item {
+    def setQty(newQty: Int, item: Item): Item =
+        item.copy(qty = newQty)
+}
 
 object CartService {
     def addItem(item: Item, cart: Cart): Cart = {
@@ -37,23 +47,19 @@ object CartService {
     }
 }
 
-trait Bundleable
-trait Discount
-
 case class PercentOff(pct: Double) extends Discount
 case class FlatPrice(flat: Double) extends Discount
 
 // Aggregation of required items, with applied discount
 case class Bundle(
     qualifier: List[Bundleable],
-    discount: AppliedHow,
-    price: Double = 0
+    discount: AppliedHow
 ) extends Bundleable
 
 // What kind of discount applied to what
 case class AppliedHow(
     discount: Discount,
-    grouping: Bundleable
+    appliedTo: Bundleable
 )
 
 // Create Bundles
@@ -76,4 +82,3 @@ object BundleService {
         Bundle(allParts, applyHow)
     }
 }
-

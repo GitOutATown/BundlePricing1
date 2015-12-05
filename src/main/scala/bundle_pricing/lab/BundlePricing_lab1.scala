@@ -1,5 +1,5 @@
 package bundle_pricing.lab
-
+/*
 import Entities._
 
 // Product or Bundle
@@ -69,7 +69,7 @@ object ShoppingTrip extends CatalogService {
         cart.copy(prods = prods ++ cart.prods)
     }
 }
-
+*/
 
 
 
