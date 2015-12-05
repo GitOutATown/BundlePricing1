@@ -6,7 +6,7 @@ package bundle_pricing.lab2
  * Calculate minPrice 
  * Validators: Option/Either/Try
  * Item factory with unique id generator
- * Protect API with private declarations
+ * Protect API, case classes with private declarations, factories
  * Print all line items and discounts
  * Asynchronous calls
  * Tests
