@@ -10,6 +10,7 @@ package bundle_pricing.lab2.app
  * Print all line items and discounts
  * Asynchronous calls
  * Tests
+ * Documentation comments
  */
 
 trait Bundleable
@@ -25,12 +26,12 @@ private[app] case class CartItem(
     qty: Int
 )
 
-case class BundleItem(
+private[app] case class BundleItem(
     item: StoreItem,
     qty: Int
 ) extends Bundleable
 
-case class Cart(
+private[app] case class Cart(
     items: List[CartItem]
 )
 
@@ -64,17 +65,17 @@ object CartService {
     def getCart() = Cart(Nil)
 }
 
-case class PercentOff(pct: Double) extends Discount
-case class FlatPrice(flat: Double) extends Discount
+private[app] case class PercentOff(pct: Double) extends Discount
+private[app] case class FlatPrice(flat: Double) extends Discount
 
 // Aggregation of required items, with applied discount
-case class Bundle(
+private[app] case class Bundle(
     qualifier: List[Bundleable],
     discount: AppliedHow
 ) extends Bundleable
 
 // What kind of discount applied to what
-case class AppliedHow(
+private[app] case class AppliedHow(
     discount: Discount,
     appliedTo: Bundleable
 )
