@@ -15,34 +15,33 @@ package bundle_pricing.lab2.app
 trait Bundleable
 trait Discount
 
-case class StoreItem(
+case class Item(
     identity: String,
     price: Double
 )
 
-private[app] case class CartItem(
-    item: StoreItem,
-    qty: Int
-)
-
 private[app] case class BundleItem(
-    item: StoreItem,
+    item: Item,
     qty: Int
 ) extends Bundleable
 
 private[app] case class Cart(
-    items: List[CartItem]
+    items: List[Item]
 )
 
 object CartService {
     def getCart() = Cart(Nil)
     
-    def addToCart(storeItem: StoreItem, qty: Int, cart: Cart): Cart = {
-        val cartItem = CartItem(storeItem, qty)
-        cart.copy(items = cartItem :: cart.items)
+    def addToCart(item: Item, cart: Cart): Cart = {
+        cart.copy(items = item :: cart.items)
     }
     
-    def addToCart(items: List[(StoreItem, Int)], cart: Cart): Cart = items match {
+    def addToCart(item: Item, qty: Int, cart: Cart): Cart = {
+        if(qty == 0) cart
+        else addToCart(item, qty - 1, cart.copy(items = item :: cart.items))
+    }
+    
+    def addToCart(items: List[(Item, Int)], cart: Cart): Cart = items match {
         case Nil => cart
         case (item, qty) :: tail => addToCart(tail, addToCart(item, qty, cart))
     }
@@ -54,7 +53,7 @@ object CartService {
     }
     
     // TODO: Make private
-    def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
+    /*def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
         val cartItems = cart.items
         println("-->bundleMatch cartItems: " + cartItems)
         println("-->bundleMatch bundle.qualifier: " + bundle.qualifier)
@@ -83,7 +82,7 @@ object CartService {
         
         //STUB
         true
-    }
+    }*/
 }
 
 private[app] case class PercentOff(pct: Double) extends Discount
@@ -106,7 +105,7 @@ object BundleService {
     
     // BundleItem has quantity
     // Factory
-    def qtyForPrice(item: StoreItem, qty: Int, bundlePrice: Double): Bundle = {
+    def qtyForPrice(item: Item, qty: Int, bundlePrice: Double): Bundle = {
         val qualifier = BundleItem(item, qty)
         val discount = AppliedHow(BundlePrice(bundlePrice), qualifier)
         Bundle(List(qualifier), discount)
