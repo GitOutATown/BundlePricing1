@@ -54,17 +54,30 @@ object CartService {
     }
     
     // TODO: Make private
-    def matchBundle(cart: Cart, bundle: Bundle): Boolean = {
-        val items = cart.items
-        
-        // All in qualifier list must equate to true, i.e. exist in cart
+    def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
+        val cartItems = cart.items
+        println("-->bundleMatch cartItems: " + cartItems)
+        println("-->bundleMatch bundle.qualifier: " + bundle.qualifier)
+        // All BundleItems in qualifier list must exist in cart.
         bundle.qualifier match {
-            case bundleable :: t => bundleable match {
-                case b: BundleItem => {
-                    val qualifierCount = items.count { x => x.item == b.item }
-                    b.qty >= qualifierCount
+            case Nil => {
+                println("-->bundleMatch Nil")
+                true // No failures found
+            }
+            // TODO: THIS MUST RECURSE!!!!!!!
+            case bundleable :: tail => bundleable match {
+                case head: BundleItem => {
+                    println("-->bundleMatch head: " + head)
+                    // match BundleItem quantity with cart quantity
+                    val qualifierCount = cartItems.count(_.item != head.item)
+                    println("-->bundleMatch qualifierCount: " + qualifierCount)
+                    val result = head.qty >= qualifierCount
+                    println("-->bundleMatch result<1>: " + result)
+                    result
                 }
-                case b: Bundle => b
+                case b: Bundle => {
+                    println("-->bundleMatch Bundle: " + b)
+                }
             }
         }
         

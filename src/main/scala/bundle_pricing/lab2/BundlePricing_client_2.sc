@@ -18,31 +18,33 @@ object BundlePricing_client_2 {
                                                   //> ipa  : bundle_pricing.lab2.app.StoreItem = StoreItem(Big Daddy IPA 6 pack,7.
                                                   //| 99)
   
-  // Items with quantity
-  val shoppingList = List(
-    (alpo, 4),
-    (hotdogs, 1),
-    (charmin, 2)
-  )                                               //> shoppingList  : List[(bundle_pricing.lab2.app.StoreItem, Int)] = List((Store
-                                                  //| Item(Alpo Chicken 3oz,0.89),4), (StoreItem(Oscar Meyer Weiners 8 pack,3.59),
-                                                  //| 1), (StoreItem(Charmin 4 roll,3.0),2))
   // Empty cart
   val cart1 = getCart                             //> cart1  : bundle_pricing.lab2.app.Cart = Cart(List())
   
   // Add single item with quantity to cart
   val cart2 = addToCart(alpo, 4, cart1)           //> cart2  : bundle_pricing.lab2.app.Cart = Cart(List(CartItem(StoreItem(Alpo Ch
                                                   //| icken 3oz,0.89),4)))
-  // Add multiple items with quantities to cart
-  val cart3 = addToCart(shoppingList, cart2)      //> cart3  : bundle_pricing.lab2.app.Cart = Cart(List(CartItem(StoreItem(Charmin
-                                                  //|  4 roll,3.0),2), CartItem(StoreItem(Oscar Meyer Weiners 8 pack,3.59),1), Car
-                                                  //| tItem(StoreItem(Alpo Chicken 3oz,0.89),4), CartItem(StoreItem(Alpo Chicken 3
-                                                  //| oz,0.89),4)))
+  
   /** Bundles ***************/
   
-  val alpoBundle = qtyForPrice(alpo, 4, 3.00)     //> alpoBundle  : bundle_pricing.lab2.app.Bundle = Bundle(List(BundleItem(StoreI
-                                                  //| tem(Alpo Chicken 3oz,0.89),4)),AppliedHow(BundlePrice(3.0),BundleItem(StoreI
-                                                  //| tem(Alpo Chicken 3oz,0.89),4)))
-
-
-  '''                                             //> res0: Char('\'') = '
+  val alpoBundle = qtyForPrice(alpo, 10, 3.00)    //> alpoBundle  : bundle_pricing.lab2.app.Bundle = Bundle(List(BundleItem(StoreI
+                                                  //| tem(Alpo Chicken 3oz,0.89),10)),AppliedHow(BundlePrice(3.0),BundleItem(Store
+                                                  //| Item(Alpo Chicken 3oz,0.89),10)))
+  
+  bundleMatch(cart2, alpoBundle)                  //> -->bundleMatch cartItems: List(CartItem(StoreItem(Alpo Chicken 3oz,0.89),4))
+                                                  //| 
+                                                  //| -->bundleMatch bundle.qualifier: List(BundleItem(StoreItem(Alpo Chicken 3oz,
+                                                  //| 0.89),10))
+                                                  //| -->bundleMatch head: BundleItem(StoreItem(Alpo Chicken 3oz,0.89),10)
+                                                  //| -->bundleMatch qualifierCount: 0
+                                                  //| -->bundleMatch result<1>: true
+                                                  //| res0: Boolean = true
+  
+  /*
+  StoreItem("Alpo Chicken 3oz", 0.89) == StoreItem("Alpo Chicken 3oz", 0.99)
+  alpo == alpo
+  StoreItem("Alpo Chicken 3oz", 0.89) == alpo
+  StoreItem("Alpo Chicken 3oz", 0.99) == alpo
+  */
+  '''                                             //> res1: Char('\'') = '
 }
