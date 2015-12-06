@@ -6,7 +6,7 @@ import bundle_pricing.lab2.app.BundleService._
 
 object BundlePricing_client_3 {
 
-    /** Simple items with unit price */
+  /** Simple items with unit price */
   val alpo = Item("Alpo Chicken 3oz", 0.89)       //> alpo  : bundle_pricing.lab2.app.Item = Item(Alpo Chicken 3oz,0.89)
   val hotdogs = Item("Oscar Meyer Weiners 8 pack", 3.59)
                                                   //> hotdogs  : bundle_pricing.lab2.app.Item = Item(Oscar Meyer Weiners 8 pack,3.
@@ -37,34 +37,10 @@ object BundlePricing_client_3 {
                                                   //| hicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89), 
                                                   //| Item(Alpo Chicken 3oz,0.89)))
   
-  /** Bundles ***************
+  /** Bundles ***************/
   
-  //val alpoBundle = qtyForPrice(alpo, 4, 3.00)
-  val alpoBundle = bundle(
-    BundlePrice(3.00, (alpo,4)),
-    
-  )
+
   
-  val breadAndButterBundle = bundle(
-    ForPriceOf(butter, 1),
-    (bread, 1), (butter, 2)
-  )
-  
-  val charminSpecial = bundle(
-    List((charmin, 1)),
-    percentOff(0.5)
-  )
-  
-  bundleMatch(cart2, alpoBundle)
-  
-  bundleMatch(cart3, alpoBundle)
-  
-  val multiBundle = bundle(
-    List((bread, 1),(butter, 2)),
-    ,
-    (butter, 2)
-  )
-  */
 
   '''                                             //> res0: Char('\'') = '
 }

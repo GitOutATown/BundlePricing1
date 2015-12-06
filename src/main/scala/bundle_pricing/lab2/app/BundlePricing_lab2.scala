@@ -56,9 +56,10 @@ object CartService {
     def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
         val cartItems = cart.items
         println("-->bundleMatch cartItems: " + cartItems)
-        println("-->bundleMatch bundle.qualifier: " + bundle.qualifier)
+        println("-->bundleMatch bundle.appliedTo: " + bundle.appliedTo)
+        println("-->bundleMatch bundle.appliedTo: " + bundle.addQualifier)
         // All BundleItems in qualifier list must exist in cart.
-        bundle.qualifier match {
+        bundle.appliedTo ++ bundle.addQualifier match {
             case Nil => {
                 println("-->bundleMatch Nil")
                 true // No failures found
@@ -83,46 +84,77 @@ object CartService {
     }
 }
 
-trait Discount
+private[app] sealed trait Discount
+private[app] case class PercentOff(pct: Double) extends Discount
+private[app] case class BundlePrice(flat: Double) extends Discount
+private[app] case class ForPriceOf(qty: Int) extends Discount
 
 // Aggregation of required items, with applied discount
 private[app] case class Bundle(
-    qualifier: List[BundleItem], 
-    discount: Discount
+    discount: Discount,
+    appliedTo: List[BundleItem],
+    addQualifier: List[BundleItem],
+    description: String
 )
 
 // Create Bundles
 object BundleService {
-    
-    case class PercentOff(pct: Double, item: BundleItem) extends Discount
-    case class BundlePrice(flat: Double, item: BundleItem) extends Discount
-    case class ForPriceOf(qty: Int, item: BundleItem) extends Discount
         
-    /** Factories. BundleItem has required quantity */
-    /* TODO: This should be just one generalized factory method. 
-     * The Discount trait should be passed in as the differentiator.
+    ///// Factories /////
+    
+    /**
+     *  N qty of an item for price of M qty of same item.
+     *  May have additional qualifiers.
      */
-    
-    /*def qtyForPrice(item: Item, qty: Int, bundlePrice: Double): Bundle = {
-        val qualifier = BundleItem(item, qty)
-        val discount = AppliedHow(BundlePrice(bundlePrice), qualifier)
-        Bundle(List(qualifier), discount)
-    }
-    
-    def forPriceOfQty(item: Item, more: Int, less: Int): Bundle = {
-        val qualifier = BundleItem(item, more)
-        val discount = AppliedHow(ForPriceOfQty(less), qualifier)
-        Bundle(List(qualifier), discount)
-    }*/
-    
-    // Factory
-    def bundle(
-        discount: Discount,
-        tupleItems: (Item, Int)* // Items with quantities
-    ): Bundle = {
-        val bundleItems = tupleItems.map{
+    def forPriceOfQty(discountItem: Item, nQty: Int, mQty: Int)
+                     (addQualifier: (Item, Int)*) // TODO Does this need Option?
+                     (description: String): Bundle = {
+        val discount = ForPriceOf(mQty) // TODO: Make this a function?
+        val appliedTo = BundleItem(discountItem, nQty)
+        val addQualifier_ = addQualifier.toList.map{
             case (item, qty) => BundleItem(item, qty)
         }
-        Bundle(bundleItems.toList, discount)
+        Bundle(discount, List(appliedTo), addQualifier_, description)
+    }
+    
+    /** 
+     *  N quantity of an item earns percent off the list price.
+     *  Handles simple case of percent off list price for one or any
+     *  number of same item.
+     *  May have additional qualifiers.
+     *  
+     *  TODO: Multiple items with specific quantities, each for percent off of 
+     *  their list price.
+     */ 
+    def percentPrice(discountItem: Item, qty: Int, pctOff: Double)
+                    (addQualifier: (Item, Int)*)
+                    (description: String): Bundle = {
+        val discount = PercentOff(pctOff)
+        val appliedTo = BundleItem(discountItem, qty)
+        val addQualifier_ = addQualifier.toList.map{
+            case (item, qty) => BundleItem(item, qty)
+        }
+        Bundle(discount, List(appliedTo), addQualifier_, description)
+    }
+    
+    /**
+     *  Multiple items of various specific quantities for flat price.
+     *  Handles simpler case of N quantity of one item for flat price.
+     *  May have additional qualifiers.
+     */
+    def bundlePrice(flatPrice: Double, discountItem: (Item, Int)*)
+                   (addQualifier: (Item, Int)*)
+                   (description: String): Bundle = {
+        val discount = BundlePrice(flatPrice)
+        val appliedTo = discountItem.toList.map{
+            case (item, qty) => BundleItem(item, qty)
+        }
+        val addQualifier_ = addQualifier.toList.map{
+            case (item, qty) => BundleItem(item, qty)
+        }
+        Bundle(discount, appliedTo, addQualifier_, description)
     }
 }
+
+
+
