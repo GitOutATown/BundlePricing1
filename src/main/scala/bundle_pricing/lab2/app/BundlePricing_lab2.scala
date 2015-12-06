@@ -34,14 +34,6 @@ private[app] case class Cart(
     items: List[CartItem]
 )
 
-/*object Item {
-    // InventoryItem factory
-    def apply(identity: String, price: Double, qty: Int): CartItem = {
-        val item = StoreItem(identity, price)
-        CartItem(item, qty)
-    }
-}*/
-
 object CartService {
     def addToCart(storeItem: StoreItem, qty: Int, cart: Cart): Cart = {
         val cartItem = CartItem(storeItem, qty)
