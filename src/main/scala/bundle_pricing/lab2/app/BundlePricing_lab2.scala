@@ -5,7 +5,6 @@ package bundle_pricing.lab2.app
  * Pattern match on bundles: identify the constituent items.
  * Calculate minPrice 
  * Validators: Option/Either/Try
- * Item factory with unique id generator
  * Protect API, case classes with private declarations, factories
  * Print all line items and discounts
  * Asynchronous calls
@@ -16,8 +15,8 @@ package bundle_pricing.lab2.app
 trait Bundleable
 trait Discount
 
-private[app] case class StoreItem(
-    id: String,
+case class StoreItem(
+    identity: String,
     price: Double
 )
 
@@ -35,26 +34,27 @@ private[app] case class Cart(
     items: List[CartItem]
 )
 
-object Item {
+/*object Item {
     // InventoryItem factory
-    def apply(id: String, price: Double, qty: Int): CartItem = {
-        val item = StoreItem(id, price)
+    def apply(identity: String, price: Double, qty: Int): CartItem = {
+        val item = StoreItem(identity, price)
         CartItem(item, qty)
     }
-}
+}*/
 
 object CartService {
-    def addItem(item: CartItem, cart: Cart): Cart = {
-        cart.copy(items = item :: cart.items)
+    def addToCart(storeItem: StoreItem, qty: Int, cart: Cart): Cart = {
+        val cartItem = CartItem(storeItem, qty)
+        cart.copy(items = cartItem :: cart.items)
     }
     
-    def addItems(item: CartItem, qty: Int, cart: Cart): Cart = {
-        val items = List.fill(qty)(item)
-        cart.copy(items = items ++ cart.items)
+    def addToCart(items: List[(StoreItem, Int)], cart: Cart): Cart = items match {
+        case Nil => cart
+        case (item, qty) :: t => addToCart(t, addToCart(item, qty, cart))
     }
     
-    def addItems(items: List[CartItem], cart: Cart): Cart =
-        cart.copy(items = cart.items ++ items)
+    /*def addItems(items: List[CartItem], cart: Cart): Cart =
+        cart.copy(items = cart.items ++ items)*/
     
     // Calculates minimum price per bundle discounts
     // Prints line items and discounts applied
@@ -66,7 +66,7 @@ object CartService {
 }
 
 private[app] case class PercentOff(pct: Double) extends Discount
-private[app] case class FlatPrice(flat: Double) extends Discount
+private[app] case class BundlePrice(flat: Double) extends Discount
 
 // Aggregation of required items, with applied discount
 private[app] case class Bundle(
@@ -84,11 +84,19 @@ private[app] case class AppliedHow(
 object BundleService {
     
     // BundleItem has quantity
-    def qtyForPrice(qualifier: BundleItem, price: Double): Bundle = {
+    // Factory
+    /*def qtyForPrice(identity: String, qty: Int, bundlePrice: Double): Bundle = {
+        val item = StoreItem(identity)
+        val discount = AppliedHow(BundlePrice(bundlePrice), qualifier)
+        Bundle(List(qualifier), discount)
+    }*/
+    
+    /*def qtyForPrice(qualifier: BundleItem, price: Double): Bundle = {
         val discount = AppliedHow(FlatPrice(price), qualifier)
         Bundle(List(qualifier), discount)
-    }
+    }*/
     
+    // Factory
     def multiPart(
         otherParts: List[Bundleable],
         discount: Discount,
