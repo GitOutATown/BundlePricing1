@@ -4,9 +4,9 @@ import bundle_pricing.lab2.app._
 import bundle_pricing.lab2.app.CartService._
 import bundle_pricing.lab2.app.BundleService._
 
-object BundlePricing_client_2 {
+object BundlePricing_client_3 {
 
-  /** Simple items with unit price */
+    /** Simple items with unit price */
   val alpo = Item("Alpo Chicken 3oz", 0.89)       //> alpo  : bundle_pricing.lab2.app.Item = Item(Alpo Chicken 3oz,0.89)
   val hotdogs = Item("Oscar Meyer Weiners 8 pack", 3.59)
                                                   //> hotdogs  : bundle_pricing.lab2.app.Item = Item(Oscar Meyer Weiners 8 pack,3.
@@ -60,6 +60,7 @@ object BundlePricing_client_2 {
                                                   //| -->bundleMatch qualifierCount: 4
                                                   //| -->bundleMatch result<1>: true
                                                   //| res1: Boolean = true
-        
+  
+
   '''                                             //> res2: Char('\'') = '
 }
