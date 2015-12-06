@@ -58,13 +58,13 @@ object CartService {
         println("-->bundleMatch cartItems: " + cartItems)
         println("-->bundleMatch bundle.appliedTo: " + bundle.appliedTo)
         println("-->bundleMatch bundle.appliedTo: " + bundle.addQualifier)
-        // All BundleItems in qualifier list must exist in cart.
+        // All BundleItems in appliedTo and addQualifier list must exist in cart.
         bundle.appliedTo ++ bundle.addQualifier match {
             case Nil => {
                 println("-->bundleMatch Nil")
                 true // No failures found
             }
-            // TODO: THIS MUST RECURSE!!!!!!!
+            // TODO: This doesn't need to recurse, it should be in for comprehension!
             case head :: tail => head match {
                 case bundleItem: BundleItem => {
                     println("-->bundleMatch head: " + bundleItem)
@@ -107,13 +107,12 @@ object BundleService {
      *  May have additional qualifiers.
      */
     def forPriceOfQty(discountItem: Item, nQty: Int, mQty: Int)
-                     (addQualifier: (Item, Int)*) // TODO Does this need Option?
+                     (addQualifier: (Item, Int)*)
                      (description: String): Bundle = {
         val discount = ForPriceOf(mQty) // TODO: Make this a function?
         val appliedTo = BundleItem(discountItem, nQty)
-        val addQualifier_ = addQualifier.toList.map{
-            case (item, qty) => BundleItem(item, qty)
-        }
+        val addQualifier_ = 
+            addQualifier.toList.map{ case (item, qty) => BundleItem(item, qty) }
         Bundle(discount, List(appliedTo), addQualifier_, description)
     }
     

@@ -18,8 +18,9 @@ object BundlePricing_client_2 {
   val cart1 = getCart                             //> cart1  : bundle_pricing.lab2.app.Cart = Cart(List())
   
   // Add single item with quantity to cart
-  val cart2 = addToCart(alpo, 3, cart1)           //> cart2  : bundle_pricing.lab2.app.Cart = Cart(List(Item(Alpo Chicken 3oz,0.89
-                                                  //| ), Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89)))
+  val cart2 = addToCart(alpo, 4, cart1)           //> cart2  : bundle_pricing.lab2.app.Cart = Cart(List(Item(Alpo Chicken 3oz,0.89
+                                                  //| ), Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89), Item(Alpo Chick
+                                                  //| en 3oz,0.89)))
   
   // Items with quantity
   val shoppingList = List(
@@ -33,15 +34,39 @@ object BundlePricing_client_2 {
   val cart3 = addToCart(shoppingList, cart2)      //> cart3  : bundle_pricing.lab2.app.Cart = Cart(List(Item(Charmin 4 roll,3.0), 
                                                   //| Item(Charmin 4 roll,3.0), Item(Oscar Meyer Weiners 8 pack,3.59), Item(Alpo C
                                                   //| hicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89), 
-                                                  //| Item(Alpo Chicken 3oz,0.89)))
+                                                  //| Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89)))
   
   /** Bundles ***************/
   
-  //val alpoBundle = forPriceOfQty(alpo, 5, 4)()
+  val alpoBundle =
+    forPriceOfQty(alpo, 5, 4)()("Alpo Chicken 3oz, 5 for price of 4")
+                                                  //> alpoBundle  : bundle_pricing.lab2.app.Bundle = Bundle(ForPriceOf(4),List(Bun
+                                                  //| dleItem(Item(Alpo Chicken 3oz,0.89),5)),List(),Alpo Chicken 3oz, 5 for price
+                                                  //|  of 4)
   
-  //bundleMatch(cart2, alpoBundle)
+  bundleMatch(cart2, alpoBundle)                  //> -->bundleMatch cartItems: List(Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicke
+                                                  //| n 3oz,0.89), Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89))
+                                                  //| -->bundleMatch bundle.appliedTo: List(BundleItem(Item(Alpo Chicken 3oz,0.89)
+                                                  //| ,5))
+                                                  //| -->bundleMatch bundle.appliedTo: List()
+                                                  //| -->bundleMatch head: BundleItem(Item(Alpo Chicken 3oz,0.89),5)
+                                                  //| -->bundleMatch qualifierCount: 4
+                                                  //| -->bundleMatch result<1>: false
+                                                  //| res0: Boolean = false
   
-  //bundleMatch(cart3, alpoBundle)
+  
+  
+  bundleMatch(cart3, alpoBundle)                  //> -->bundleMatch cartItems: List(Item(Charmin 4 roll,3.0), Item(Charmin 4 roll
+                                                  //| ,3.0), Item(Oscar Meyer Weiners 8 pack,3.59), Item(Alpo Chicken 3oz,0.89), I
+                                                  //| tem(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3
+                                                  //| oz,0.89), Item(Alpo Chicken 3oz,0.89))
+                                                  //| -->bundleMatch bundle.appliedTo: List(BundleItem(Item(Alpo Chicken 3oz,0.89)
+                                                  //| ,5))
+                                                  //| -->bundleMatch bundle.appliedTo: List()
+                                                  //| -->bundleMatch head: BundleItem(Item(Alpo Chicken 3oz,0.89),5)
+                                                  //| -->bundleMatch qualifierCount: 5
+                                                  //| -->bundleMatch result<1>: true
+                                                  //| res1: Boolean = true
         
-  '''                                             //> res0: Char('\'') = '
+  '''                                             //> res2: Char('\'') = '
 }
