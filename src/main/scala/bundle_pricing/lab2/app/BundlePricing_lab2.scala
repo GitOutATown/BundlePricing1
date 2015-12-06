@@ -35,6 +35,8 @@ private[app] case class Cart(
 )
 
 object CartService {
+    def getCart() = Cart(Nil)
+    
     def addToCart(storeItem: StoreItem, qty: Int, cart: Cart): Cart = {
         val cartItem = CartItem(storeItem, qty)
         cart.copy(items = cartItem :: cart.items)
@@ -42,11 +44,8 @@ object CartService {
     
     def addToCart(items: List[(StoreItem, Int)], cart: Cart): Cart = items match {
         case Nil => cart
-        case (item, qty) :: t => addToCart(t, addToCart(item, qty, cart))
+        case (item, qty) :: tail => addToCart(tail, addToCart(item, qty, cart))
     }
-    
-    /*def addItems(items: List[CartItem], cart: Cart): Cart =
-        cart.copy(items = cart.items ++ items)*/
     
     // Calculates minimum price per bundle discounts
     // Prints line items and discounts applied
@@ -54,7 +53,24 @@ object CartService {
         0 // TODO: STUB
     }
     
-    def getCart() = Cart(Nil)
+    // TODO: Make private
+    def matchBundle(cart: Cart, bundle: Bundle): Boolean = {
+        val items = cart.items
+        
+        // All in qualifier list must equate to true, i.e. exist in cart
+        bundle.qualifier match {
+            case bundleable :: t => bundleable match {
+                case b: BundleItem => {
+                    val qualifierCount = items.count { x => x.item == b.item }
+                    b.qty >= qualifierCount
+                }
+                case b: Bundle => b
+            }
+        }
+        
+        //STUB
+        true
+    }
 }
 
 private[app] case class PercentOff(pct: Double) extends Discount
@@ -77,16 +93,11 @@ object BundleService {
     
     // BundleItem has quantity
     // Factory
-    /*def qtyForPrice(identity: String, qty: Int, bundlePrice: Double): Bundle = {
-        val item = StoreItem(identity)
+    def qtyForPrice(item: StoreItem, qty: Int, bundlePrice: Double): Bundle = {
+        val qualifier = BundleItem(item, qty)
         val discount = AppliedHow(BundlePrice(bundlePrice), qualifier)
         Bundle(List(qualifier), discount)
-    }*/
-    
-    /*def qtyForPrice(qualifier: BundleItem, price: Double): Bundle = {
-        val discount = AppliedHow(FlatPrice(price), qualifier)
-        Bundle(List(qualifier), discount)
-    }*/
+    }
     
     // Factory
     def multiPart(

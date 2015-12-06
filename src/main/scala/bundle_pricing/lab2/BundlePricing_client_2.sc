@@ -2,8 +2,9 @@ package bundle_pricing.lab2
 
 import bundle_pricing.lab2.app._
 import bundle_pricing.lab2.app.CartService._
+import bundle_pricing.lab2.app.BundleService._
 
-object BundlePricing_client_1 {
+object BundlePricing_client_2 {
 
   /** Simple items with unit price */
   val alpo = StoreItem("Alpo Chicken 3oz", 0.89)  //> alpo  : bundle_pricing.lab2.app.StoreItem = StoreItem(Alpo Chicken 3oz,0.89)
@@ -36,6 +37,12 @@ object BundlePricing_client_1 {
                                                   //|  4 roll,3.0),2), CartItem(StoreItem(Oscar Meyer Weiners 8 pack,3.59),1), Car
                                                   //| tItem(StoreItem(Alpo Chicken 3oz,0.89),4), CartItem(StoreItem(Alpo Chicken 3
                                                   //| oz,0.89),4)))
+  /** Bundles ***************/
   
+  val alpoBundle = qtyForPrice(alpo, 4, 3.00)     //> alpoBundle  : bundle_pricing.lab2.app.Bundle = Bundle(List(BundleItem(StoreI
+                                                  //| tem(Alpo Chicken 3oz,0.89),4)),AppliedHow(BundlePrice(3.0),BundleItem(StoreI
+                                                  //| tem(Alpo Chicken 3oz,0.89),4)))
+
+
   '''                                             //> res0: Char('\'') = '
 }
