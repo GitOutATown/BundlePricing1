@@ -53,7 +53,7 @@ object CartService {
     }
     
     // TODO: Make private
-    /*def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
+    def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
         val cartItems = cart.items
         println("-->bundleMatch cartItems: " + cartItems)
         println("-->bundleMatch bundle.qualifier: " + bundle.qualifier)
@@ -68,21 +68,18 @@ object CartService {
                 case head: BundleItem => {
                     println("-->bundleMatch head: " + head)
                     // match BundleItem quantity with cart quantity
-                    val qualifierCount = cartItems.count(_.item != head.item)
+                    val qualifierCount = cartItems.count(_ == head.item)
                     println("-->bundleMatch qualifierCount: " + qualifierCount)
-                    val result = head.qty >= qualifierCount
+                    val result = qualifierCount >= head.qty
                     println("-->bundleMatch result<1>: " + result)
                     result
                 }
-                case b: Bundle => {
+                /*case b: Bundle => {
                     println("-->bundleMatch Bundle: " + b)
-                }
+                }*/
             }
         }
-        
-        //STUB
-        true
-    }*/
+    }
 }
 
 private[app] case class PercentOff(pct: Double) extends Discount
