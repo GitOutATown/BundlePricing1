@@ -12,9 +12,6 @@ package bundle_pricing.lab2.app
  * Documentation comments
  */
 
-//trait Bundleable
-trait Discount
-
 case class Item(
     identity: String,
     price: Double
@@ -23,7 +20,7 @@ case class Item(
 private[app] case class BundleItem(
     item: Item,
     qty: Int
-) //extends Bundleable
+)
 
 private[app] case class Cart(
     items: List[Item]
@@ -86,55 +83,27 @@ object CartService {
     }
 }
 
-/*
- * TODO: How bout this for an idea of how to do generalized
- * function parameterizaton for discounts:
- * map price to price--the function implements how, so
- * f: A => B
- * or
- * f: Double => Double // ie. price
- * This could be applicable for either flat price or percentage
- * but what about m for price of n pricing?
- * That doesn't seem to fit f: A => B
- * Well, it does! It doesn't fit f: Double => Double
- * but it fits f: A => B, which in m for n pricing would be f: Int => Int
- * But how then does the mapping work? How does it know which fields to apply to?
- * This is where I really need to keep studying FP in the red book.
- */
-
-/*
- * Ok, I think I have a plan.
- * I basically have 3 days left: Sun, Mon, Tue
- * Sun: Reworking Bundle parsing, i.e. bundleMatch so that it is completely
- * generalized. No conditional sequences of blocks, just one mapping that 
- * takes a passed (parameterized) function that applies the discount.
- */
-
-private[app] case class PercentOff(pct: Double) extends Discount
-private[app] case class BundlePrice(flat: Double) extends Discount
-private[app] case class ForPriceOfQty(fewer: Int) extends Discount
+trait Discount
 
 // Aggregation of required items, with applied discount
 private[app] case class Bundle(
-    qualifier: List[BundleItem], // Just 
-    discount: AppliedHow
-) //extends Bundleable
-
-// What kind of discount applied to what
-private[app] case class AppliedHow(
-    discount: Discount,
-    appliedTo: BundleItem
+    qualifier: List[BundleItem], 
+    discount: Discount
 )
 
 // Create Bundles
 object BundleService {
     
+    case class PercentOff(pct: Double, item: BundleItem) extends Discount
+    case class BundlePrice(flat: Double, item: BundleItem) extends Discount
+    case class ForPriceOf(qty: Int, item: BundleItem) extends Discount
+        
     /** Factories. BundleItem has required quantity */
     /* TODO: This should be just one generalized factory method. 
      * The Discount trait should be passed in as the differentiator.
      */
     
-    def qtyForPrice(item: Item, qty: Int, bundlePrice: Double): Bundle = {
+    /*def qtyForPrice(item: Item, qty: Int, bundlePrice: Double): Bundle = {
         val qualifier = BundleItem(item, qty)
         val discount = AppliedHow(BundlePrice(bundlePrice), qualifier)
         Bundle(List(qualifier), discount)
@@ -144,17 +113,16 @@ object BundleService {
         val qualifier = BundleItem(item, more)
         val discount = AppliedHow(ForPriceOfQty(less), qualifier)
         Bundle(List(qualifier), discount)
-    }
+    }*/
     
     // Factory
     def bundle(
-        otherParts: List[BundleItem], // Items with quantities
-        discount: Discount, // TODO: This should be a function. Needs parameters.
-        appliedTo: BundleItem // Item with quantity, might be same as otherparts.head i.e. otherparts.length = 1
+        discount: Discount,
+        tupleItems: (Item, Int)* // Items with quantities
     ): Bundle = {
-        // TODO: Verify/Require that appliedTo exists in parts
-        val applyHow = AppliedHow(discount, appliedTo)
-        val allParts = appliedTo :: otherParts
-        Bundle(allParts, applyHow)
+        val bundleItems = tupleItems.map{
+            case (item, qty) => BundleItem(item, qty)
+        }
+        Bundle(bundleItems.toList, discount)
     }
 }
