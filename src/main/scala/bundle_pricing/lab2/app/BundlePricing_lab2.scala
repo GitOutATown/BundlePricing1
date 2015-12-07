@@ -12,21 +12,30 @@ package bundle_pricing.lab2.app
  * Documentation comments
  */
 
+trait PriceItem
+
 case class Item(
     identity: String,
     price: Double
-)
+) extends PriceItem
 
 private[app] case class BundleItem(
     item: Item,
     qty: Int
 )
 
+/*private[app] case class AppliedBundleItem(
+    item: BundleItem,
+    price: Double
+) extends PriceItem*/
+
 private[app] case class Cart(
     items: List[Item]
 )
 
 object CartService {
+    import Util.round
+    
     def getCart() = Cart(Nil)
     
     // Single item
@@ -41,32 +50,32 @@ object CartService {
     }
     
     // Multiple items, each with variable quanties
+    @annotation.tailrec
     def addToCart(items: List[(Item, Int)], cart: Cart): Cart = items match {
         case Nil => cart
         case (item, qty) :: tail => addToCart(tail, addToCart(item, qty, cart))
     }
     
     // Calculates minimum price per bundle discounts
-    // Prints line items and discounts applied
-    def checkout(cart: Cart): Double = {
-        // Identify bundles
-        // Qualify bundles
-        // Apply bundles in all cart combinations
-        // Select bundle config with lowest cart total cost
+    def checkout(cart: Cart, bundles: List[Bundle]): Double = {
+        val applicableBundles = bundles.filter(bundleMatch(cart, _))
         
         0 // TODO: STUB
     }
     
     def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
-        val cartItems = cart.items
-        
-        println("-->bundleMatch cartItems: " + cartItems)
-        println("-->bundleMatch bundle.appliedTo: " + bundle.appliedTo)
-        println("-->bundleMatch bundle.appliedTo: " + bundle.addQualifier)
-        
         val required = bundle.appliedTo ++ bundle.addQualifier
         required.forall{ bundleItem =>
-            cartItems.count(_ == bundleItem.item) >= bundleItem.qty }
+            cart.items.count(_ == bundleItem.item) >= bundleItem.qty }
+    }
+    
+    def applyBundle(items: List[Item], bundle: Bundle) = {
+        val targetItems = bundle.appliedTo
+    }
+    
+    def itemsTotal(items: List[Item]): Double = {
+        val result = items.foldRight(0.0)((item, acc) => item.price + acc)
+        round(result)
     }
 }
 
@@ -84,6 +93,10 @@ private[app] case class Bundle(
 )
 
 object BundleService {
+    
+    ///// Bundle factories /////
+    // TODO: Factor out commonalities
+    // TODO: Replace Discount case class with function parameter
             
     /**
      *  N qty of an item for price of M qty of same item.
@@ -136,6 +149,15 @@ object BundleService {
         }
         Bundle(discount, appliedTo, addQualifier_, description)
     }
+}
+
+object Util {
+    def roundAt(prec: Int)(n: Double): Double = {
+        val scale = math pow(10, prec)
+        (math round n * scale) / scale
+    }
+    
+    val round = roundAt(2)_
 }
 
 
