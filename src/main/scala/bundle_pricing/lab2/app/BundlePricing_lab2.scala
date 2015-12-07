@@ -49,6 +49,11 @@ object CartService {
     // Calculates minimum price per bundle discounts
     // Prints line items and discounts applied
     def checkout(cart: Cart): Double = {
+        // Identify bundles
+        // Qualify bundles
+        // Apply bundles in all cart combinations
+        // Select bundle config with lowest cart total cost
+        
         0 // TODO: STUB
     }
     
