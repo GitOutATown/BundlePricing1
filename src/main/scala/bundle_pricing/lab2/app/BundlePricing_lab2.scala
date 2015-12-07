@@ -85,8 +85,7 @@ object CartService {
                  * as they are.)
                  */
                 
-                // List of BundleItems that the Discount is applied to.
-                val bundleItems = bundle.appliedTo
+                applyBundle(cart, bundle) // TODO: Should this be List[PricedItems]?
                 
                 List(Item("STUB", 0.0)) // STUB
             } 
@@ -96,10 +95,13 @@ object CartService {
         Cart(finalItems)
     }
     
-    // TODO: This must be converted to applyBundle and process all BundleItems.
-    def applyBundleItem(
-        items: List[PricedItem], bundleItem: BundleItem
-    ): List[PricedItem] = {
+    // Process all BundleItems. Recursive.
+    def applyBundle(
+        cart: Cart, bundle: Bundle
+    ): List[PricedItem] = { // TODO: Should this be Cart?
+        
+        val bundleItem = bundle.appliedTo.head // TODO: TEMP
+        val items = cart.items
         
         val targetItem = bundleItem.item
         val count = 0
@@ -115,6 +117,7 @@ object CartService {
             else (item :: context._1, context._2, context._3, context._4)
         })
         
+        // TODO: RECURSE to next BundleItem in list.
         // if(count == targetQty) return filtered items
         // else return original items
         if(result._2 == result._3) result._1
@@ -122,7 +125,7 @@ object CartService {
             val bundleTotal = 0.0 // STUB, should be method that applies discount to bundle, but that is why ALL BundleItems must be applied in this method. 
             AppliedBundleItem(bundleItem, bundleTotal) :: items
         }
-    }
+    } // applyBundleItem
     
     def cartTotal(cart: Cart): Cart = {
         val result = cart.items.foldRight(0.0)((item, acc) => item.price + acc)
