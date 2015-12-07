@@ -1,36 +1,34 @@
 package bundle_pricing.lab2.app
 
-/**
- * TODO:
- * Pattern match on bundles: identify the constituent items.
- * Calculate minPrice 
- * Validators: Option/Either/Try
- * Protect API, case classes with private declarations, factories
- * Print all line items and discounts
- * Asynchronous calls
- * Tests
- * Documentation comments
- */
-
-trait PriceItem
+sealed trait PricedItem { def price: Double }
 
 case class Item(
     identity: String,
     price: Double
-) extends PriceItem
+) extends PricedItem
 
 private[app] case class BundleItem(
     item: Item,
     qty: Int
 )
 
-/*private[app] case class AppliedBundleItem(
+/* TODO: NIX comment.
+ * I like this--it does get at capturing the applied price, but I'm affraid
+ * that the price should actually be calculated at the item level. It really
+ * needs to be both! Ok, I'm going to make an executive decision here and
+ * not do that! Time is running out! I'm only going to capture the items, which
+ * is easy, because Bundle item has already done that (I just need to remove
+ * them from the cart's item list. But I'm only going to aggregate the price
+ * per the discount at the Bundle Item level, not at the individual item!
+ */
+private[app] case class AppliedBundleItem(
     item: BundleItem,
     price: Double
-) extends PriceItem*/
+) extends PricedItem
 
 private[app] case class Cart(
-    items: List[Item]
+    items: List[PricedItem],
+    total: Double = 0.0
 )
 
 object CartService {
@@ -56,11 +54,17 @@ object CartService {
         case (item, qty) :: tail => addToCart(tail, addToCart(item, qty, cart))
     }
     
-    // Calculates minimum price per bundle discounts
-    def checkout(cart: Cart, bundles: List[Bundle]): Double = {
+    // Calculates minimum cart total per bundle discounts
+    def checkout(cart: Cart, bundles: List[Bundle]): Cart = {
         val applicableBundles = bundles.filter(bundleMatch(cart, _))
+        val bundlePerms = (applicableBundles.permutations).toList
         
-        0 // TODO: STUB
+        /* Each iteration has original cart but different bundle order.
+         * Every possible sequence of bundle captures are tried. */
+        val allCartVersions = bundlePerms.map(applyBundles(cart, _))
+        val cartTotals = allCartVersions.map(cartTotal(_)) // TODO: Move this to applyBundles
+        val minCart = cartTotals.reduceLeft(minTotal)
+        minCart
     }
     
     def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
@@ -69,14 +73,40 @@ object CartService {
             cart.items.count(_ == bundleItem.item) >= bundleItem.qty }
     }
     
-    def applyBundle(items: List[Item], bundle: Bundle) = {
-        val targetItems = bundle.appliedTo
+    // Recursive
+    def applyBundles(cart: Cart, bundles: List[Bundle]): Cart = {
+        def inner(
+            items: List[Item], bundles: List[Bundle]
+        ): List[Item] = bundles match {
+            case Nil => getCart ???
+            case bundle :: tail => {
+                // List of BundleItems that the Discount is applied to.
+                val bundleItems = bundle.appliedTo
+                /* What do I need/want to do here? BundleItems are the
+                 * specific items (with qty) that I need to capture from
+                 * the available items in the cart. So capture them!!
+                 * What about using a method similar to bundleMatch?
+                 * Yes--here's something useful: val required in bundleMatch
+                 * is a List[BundleItem] and that's exactly what bundleItems
+                 * is here! So...
+                 * Also, there needs to be another entity that serves to 
+                 * encapsulate the successfully captured items of the bundle.
+                 * But can't the existing BundleItem do that? No, it doesn't
+                 * have a price. But how exactly am I encapsulating and computing
+                 * the discounted prices in the bundle????
+                 */
+            } 
+        }
+        val finalItems = inner(cart.items, bundles)
+        Cart(finalItems)
     }
     
-    def itemsTotal(items: List[Item]): Double = {
-        val result = items.foldRight(0.0)((item, acc) => item.price + acc)
-        round(result)
+    def cartTotal(cart: Cart): Cart = {
+        val result = cart.items.foldRight(0.0)((item, acc) => item.price + acc)
+        cart.copy(total = round(result))
     }
+    
+    def minTotal(a: Cart, b: Cart): Cart = if(a.total < b.total) a else b
 }
 
 private[app] sealed trait Discount
@@ -156,7 +186,6 @@ object Util {
         val scale = math pow(10, prec)
         (math round n * scale) / scale
     }
-    
     val round = roundAt(2)_
 }
 
