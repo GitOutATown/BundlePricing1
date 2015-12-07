@@ -45,22 +45,21 @@ object CartService {
         case (item, qty) :: tail => addToCart(tail, addToCart(item, qty, cart))
     }
     
-    // Calculates minimum cart total per bundle discounts
+    // TODO: Return future
+    // Calculates minimum cart total per best combination of bundle discounts.
     def checkout(cart: Cart, bundles: List[Bundle]): Cart = {
         val applicableBundles = bundles.filter(bundleMatch(cart, _))
         val bundlePerms = (applicableBundles.permutations).toList
-        
-        /* Each iteration has original cart but different bundle order.
-         * Every possible sequence of bundle captures are tried. */
+        // Each iteration has original cart but different bundle order.
+        // Every possible sequence of bundles are tried.
         val allCartVersions = bundlePerms.map(applyBundles(cart, _))
         val cartTotals = allCartVersions.map(cartTotal(_)) // TODO: Move this to applyBundles
         val minCart = cartTotals.reduceLeft(minTotal)
         minCart
     }
     
-    /*
-     *  TODO: Be careful: Cart.items are now PricedItem, which allows for 
-     *  AppliedBundleItems. This is a risk!
+    /* TODO: Be careful: Cart.items are now PricedItem, which allows for 
+     * AppliedBundleItems. This is a risk!
      */
     def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
         val required = bundle.appliedTo ++ bundle.addQualifier
@@ -68,32 +67,13 @@ object CartService {
             cart.items.count(_ == bundleItem.item) >= bundleItem.qty }
     }
     
-    // Recursive
-    def applyBundles(cart: Cart, bundles: List[Bundle]): Cart = {
-        
-        def inner(
-            items: List[PricedItem], bundles: List[Bundle]
-        ): List[PricedItem] = bundles match {
-            case Nil => items // All bundles have been applied or tried
-            case bundle :: tail => {
-                
-                /*
-                 * Ok, I'm still qualifying here, sort of similar to
-                 * bundleMatch, but precicely matches and removes loose
-                 * items from cart if all items are able to be captured,
-                 * otherwise doesn't apply bundle (i.e. leaves cart.items
-                 * as they are.)
-                 */
-                
-                applyBundle(cart, bundle) // TODO: Should this be List[PricedItems]?
-                
-                List(Item("STUB", 0.0)) // STUB
-            } 
-        }
-        
-        val finalItems = inner(cart.items, bundles)
-        Cart(finalItems)
-    } // end - applyBundles
+    /* Precicely matches and replaces loose cart items with BundleItems (item qty 
+     * with discount). If bundle can't be applied, leaves cart items as found.
+     */
+    def applyBundles(cart: Cart, bundles: List[Bundle]): Cart = bundles match {
+        case Nil => cart // All bundles have been applied or tried.
+        case bundle :: tail => applyBundles(applyBundle(cart, bundle), tail)
+    }
     
     // Process all BundleItems
     def applyBundle(cart: Cart, bundle: Bundle): Cart = {
@@ -101,7 +81,7 @@ object CartService {
         def inner(
             items: List[PricedItem], bundleItems: List[BundleItem]
         ): List[PricedItem] = bundleItems match {
-            case Nil => items // Successful application of all BundleItems. Any failure shorcuts to outer returning original cart.items.
+            case Nil => items // Successful application of all BundleItems. Any failure shorcuts to outer, returning original cart.items.
             case bundleItem :: tail => {
                 val targetItem = bundleItem.item
                 val count = 0
@@ -112,7 +92,7 @@ object CartService {
                 // Remove cart items that exist in BundleItem
                 val result = items.foldRight(context)((item, context) => {
                     // TODO: NIX: println("item:" + item + " acc:" + context._1 + " count:" + context._2 + " limit:" + context._3)
-                    // if (count <= targetQty)
+                    // if count <= targetQty filter out targetItem
                     if(item == targetItem && context._2 < context._3)
                         (context._1, context._2 + 1, context._3, context._4)
                     else (item :: context._1, context._2, context._3, context._4)
@@ -138,9 +118,8 @@ object CartService {
         // Start recursion of BundleItems for this Bundle.
         val appliedItems = inner(cart.items, bundle.appliedTo)
         
-        /* Return outer. 
-         * Could be either successful or unsuccessful BundleItem application.
-         */
+        // Return outer. 
+        // Could be either successful or unsuccessful BundleItem application.
         Cart(appliedItems)
         
     } // end applyBundle
