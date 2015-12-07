@@ -12,15 +12,6 @@ private[app] case class BundleItem(
     qty: Int
 )
 
-/* TODO: NIX comment.
- * I like this--it does get at capturing the applied price, but I'm affraid
- * that the price should actually be calculated at the item level. It really
- * needs to be both! Ok, I'm going to make an executive decision here and
- * not do that! Time is running out! I'm only going to capture the items, which
- * is easy, because Bundle item has already done that (I just need to remove
- * them from the cart's item list. But I'm only going to aggregate the price
- * per the discount at the Bundle Item level, not at the individual item!
- */
 private[app] case class AppliedBundleItem(
     item: BundleItem,
     price: Double
@@ -67,6 +58,10 @@ object CartService {
         minCart
     }
     
+    /*
+     *  TODO: Be careful: Cart.items are now PricedItem, which allows for 
+     *  AppliedBundleItems. This is a risk!
+     */
     def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
         val required = bundle.appliedTo ++ bundle.addQualifier
         required.forall{ bundleItem =>
@@ -75,30 +70,58 @@ object CartService {
     
     // Recursive
     def applyBundles(cart: Cart, bundles: List[Bundle]): Cart = {
+        
         def inner(
-            items: List[Item], bundles: List[Bundle]
-        ): List[Item] = bundles match {
-            case Nil => getCart ???
+            items: List[PricedItem], bundles: List[Bundle]
+        ): List[PricedItem] = bundles match {
+            case Nil => items // All bundles have been applied or tried
             case bundle :: tail => {
+                
+                /*
+                 * Ok, I'm still qualifying here, sort of similar to
+                 * bundleMatch, but precicely matches and removes loose
+                 * items from cart if all items are able to be captured,
+                 * otherwise doesn't apply bundle (i.e. leaves cart.items
+                 * as they are.)
+                 */
+                
                 // List of BundleItems that the Discount is applied to.
                 val bundleItems = bundle.appliedTo
-                /* What do I need/want to do here? BundleItems are the
-                 * specific items (with qty) that I need to capture from
-                 * the available items in the cart. So capture them!!
-                 * What about using a method similar to bundleMatch?
-                 * Yes--here's something useful: val required in bundleMatch
-                 * is a List[BundleItem] and that's exactly what bundleItems
-                 * is here! So...
-                 * Also, there needs to be another entity that serves to 
-                 * encapsulate the successfully captured items of the bundle.
-                 * But can't the existing BundleItem do that? No, it doesn't
-                 * have a price. But how exactly am I encapsulating and computing
-                 * the discounted prices in the bundle????
-                 */
+                
+                List(Item("STUB", 0.0)) // STUB
             } 
         }
+        
         val finalItems = inner(cart.items, bundles)
         Cart(finalItems)
+    }
+    
+    // TODO: This must be converted to applyBundle and process all BundleItems.
+    def applyBundleItem(
+        items: List[PricedItem], bundleItem: BundleItem
+    ): List[PricedItem] = {
+        
+        val targetItem = bundleItem.item
+        val count = 0
+        val targetQty = bundleItem.qty
+        val acc = List[PricedItem]()
+        val context = (acc, count, targetQty, targetItem) // TODO: Make BundleContext case class
+        
+        val result = items.foldRight(context)((item, context) => {
+            // TODO: NIX: println("item:" + item + " acc:" + context._1 + " count:" + context._2 + " limit:" + context._3)
+            // if (count <= limit)
+            if(item == targetItem && context._2 < context._3)
+                (context._1, context._2 + 1, context._3, context._4)
+            else (item :: context._1, context._2, context._3, context._4)
+        })
+        
+        // if(count == targetQty) return filtered items
+        // else return original items
+        if(result._2 == result._3) result._1
+        else {
+            val bundleTotal = 0.0 // STUB, should be method that applies discount to bundle, but that is why ALL BundleItems must be applied in this method. 
+            AppliedBundleItem(bundleItem, bundleTotal) :: items
+        }
     }
     
     def cartTotal(cart: Cart): Cart = {

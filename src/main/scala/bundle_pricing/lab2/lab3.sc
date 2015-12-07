@@ -45,8 +45,11 @@ object lab3 {
                                                   //| c:b acc:List(c, d, e) count:2 limit:4
                                                   //| c:a acc:List(c, d, e) count:3 limit:4
                                                   //| result  : (List[Char], Int, Int, Char) = (List(a, c, d, e),3,4,b)
+  result._2 == result._3                          //> res6: Boolean = false
   
-  result._2 >= result._3                          //> res6: Boolean = false
+  val allOrNone =
+    if(result._2 == result._3) result._1
+    else chars                                    //> allOrNone  : List[Char] = List(a, b, c, b, d, e, b)
   
   // List('a', 'b', 'c', 'b', 'd', 'e', 'b')
 
