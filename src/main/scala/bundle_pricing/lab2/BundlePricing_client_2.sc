@@ -49,9 +49,6 @@ object BundlePricing_client_2 {
                                                   //| -->bundleMatch bundle.appliedTo: List(BundleItem(Item(Alpo Chicken 3oz,0.89)
                                                   //| ,5))
                                                   //| -->bundleMatch bundle.appliedTo: List()
-                                                  //| -->bundleMatch head: BundleItem(Item(Alpo Chicken 3oz,0.89),5)
-                                                  //| -->bundleMatch qualifierCount: 4
-                                                  //| -->bundleMatch result<1>: false
                                                   //| res0: Boolean = false
   
   
@@ -63,9 +60,6 @@ object BundlePricing_client_2 {
                                                   //| -->bundleMatch bundle.appliedTo: List(BundleItem(Item(Alpo Chicken 3oz,0.89)
                                                   //| ,5))
                                                   //| -->bundleMatch bundle.appliedTo: List()
-                                                  //| -->bundleMatch head: BundleItem(Item(Alpo Chicken 3oz,0.89),5)
-                                                  //| -->bundleMatch qualifierCount: 5
-                                                  //| -->bundleMatch result<1>: true
                                                   //| res1: Boolean = true
         
   '''                                             //> res2: Char('\'') = '

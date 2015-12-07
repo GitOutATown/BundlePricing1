@@ -52,35 +52,16 @@ object CartService {
         0 // TODO: STUB
     }
     
-    // TODO: Make private
     def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
         val cartItems = cart.items
+        
         println("-->bundleMatch cartItems: " + cartItems)
         println("-->bundleMatch bundle.appliedTo: " + bundle.appliedTo)
         println("-->bundleMatch bundle.appliedTo: " + bundle.addQualifier)
-        // All BundleItems in appliedTo and addQualifier list must exist in cart.
-        bundle.appliedTo ++ bundle.addQualifier match {
-            case Nil => {
-                println("-->bundleMatch Nil")
-                true // No failures found
-            }
-            // TODO: This doesn't need to recurse, it should be in for comprehension!
-            case head :: tail => head match {
-                case bundleItem: BundleItem => {
-                    println("-->bundleMatch head: " + bundleItem)
-                    // There is just this generalized pattern:
-                    // i.e. match BundleItem quantity with cart quantity
-                    val qualifierCount = cartItems.count(_ == bundleItem.item)
-                    println("-->bundleMatch qualifierCount: " + qualifierCount)
-                    val result = qualifierCount >= bundleItem.qty
-                    println("-->bundleMatch result<1>: " + result)
-                    result
-                }
-                /*case b: Bundle => {
-                    println("-->bundleMatch Bundle: " + b)
-                }*/
-            }
-        }
+        
+        val required = bundle.appliedTo ++ bundle.addQualifier
+        required.forall{ bundleItem =>
+            cartItems.count(_ == bundleItem.item) >= bundleItem.qty }
     }
 }
 
@@ -97,11 +78,8 @@ private[app] case class Bundle(
     description: String
 )
 
-// Create Bundles
 object BundleService {
-        
-    ///// Factories /////
-    
+            
     /**
      *  N qty of an item for price of M qty of same item.
      *  May have additional qualifiers.

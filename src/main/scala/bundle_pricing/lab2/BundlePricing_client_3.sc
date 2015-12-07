@@ -53,11 +53,22 @@ object BundlePricing_client_3 {
                                                   //| )
                                                   //| -->bundleMatch bundle.appliedTo: List(BundleItem(Item(Wonder Bread,1.29),1)
                                                   //| )
-                                                  //| -->bundleMatch head: BundleItem(Item(Butter Stick,0.89),2)
-                                                  //| -->bundleMatch qualifierCount: 2
-                                                  //| -->bundleMatch result<1>: true
-                                                  //| res0: Boolean = true
+                                                  //| res0: Boolean = false
+  val cart4 = addToCart(bread, 1, cart3)          //> cart4  : bundle_pricing.lab2.app.Cart = Cart(List(Item(Wonder Bread,1.29), 
+                                                  //| Item(Butter Stick,0.89), Item(Butter Stick,0.89), Item(Charmin 4 roll,3.0),
+                                                  //|  Item(Charmin 4 roll,3.0), Item(Oscar Meyer Weiners 8 pack,3.59), Item(Alpo
+                                                  //|  Chicken 3oz,0.89)))
+  
+  bundleMatch(cart4, breadAndButterBundle)        //> -->bundleMatch cartItems: List(Item(Wonder Bread,1.29), Item(Butter Stick,0
+                                                  //| .89), Item(Butter Stick,0.89), Item(Charmin 4 roll,3.0), Item(Charmin 4 rol
+                                                  //| l,3.0), Item(Oscar Meyer Weiners 8 pack,3.59), Item(Alpo Chicken 3oz,0.89))
+                                                  //| 
+                                                  //| -->bundleMatch bundle.appliedTo: List(BundleItem(Item(Butter Stick,0.89),2)
+                                                  //| )
+                                                  //| -->bundleMatch bundle.appliedTo: List(BundleItem(Item(Wonder Bread,1.29),1)
+                                                  //| )
+                                                  //| res1: Boolean = true
   
 
-  '''                                             //> res1: Char('\'') = '
+  '''                                             //> res2: Char('\'') = '
 }
