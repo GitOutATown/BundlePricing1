@@ -118,12 +118,13 @@ object CartService {
                     else (item :: context._1, context._2, context._3, context._4)
                 })
                 
-                // if(count == targetQty) Successful application of BundleItem, 
-                // so recurse with filtered out cart.items and their BundleItem replacement.
+                // if count == targetQty we have successful application of BundleItem, 
+                // so recurse with BundleItem replacing filtered-out lose items.
                 if(result._2 == result._3) {
                     val bundleTotal = 0.0 // TODO: STUB, should be method that applies discount to bundle, but that is why ALL BundleItems must be applied in this method. 
-                    AppliedBundleItem(bundleItem, bundleTotal) :: items
-                    inner(result._1, tail)
+                    val addedBundleItem = 
+                        AppliedBundleItem(bundleItem, bundleTotal) :: result._1
+                    inner(addedBundleItem, tail)
                 }
                 // else return to outer with original cart.items
                 else cart.items
@@ -131,8 +132,15 @@ object CartService {
         } // end inner
         
         // TODO: Where (and how) should the Bundle Discounts be applied?
+        // Currently, I seem to be doing it at each successful BundleItem 
+        // iteration. I think that works for now.
         
+        // Start recursion of BundleItems for this Bundle.
         val appliedItems = inner(cart.items, bundle.appliedTo)
+        
+        /* Return outer. 
+         * Could be either successful or unsuccessful BundleItem application.
+         */
         Cart(appliedItems)
         
     } // end applyBundle
