@@ -47,7 +47,6 @@ object CartService {
         case (item, qty) :: tail => addToCart(tail, addToCart(item, qty, cart))
     }
     
-    // TODO: Return future
     /** 
      *  API Calculates minimum cart total per best combination of bundle 
      *  discounts. 
