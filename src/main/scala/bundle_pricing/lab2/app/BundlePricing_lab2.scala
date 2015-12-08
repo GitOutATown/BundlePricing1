@@ -63,7 +63,7 @@ object CartService {
      */
     // Purpose: initial filter for cart relevancy based on adequate items
     // without consideration for overlap with other bundles.
-    def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
+    private[app] def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
         val required = bundle.appliedTo ++ bundle.addQualifier
         required.forall{ bundleItem =>
             cart.items.count(_ == bundleItem.item) >= bundleItem.qty }
@@ -72,13 +72,13 @@ object CartService {
     /** Precicely matches and replaces loose cart items with BundleItems (item qty 
      *  with discount). If bundle can't be applied, leaves cart items as found.
      */
-    def applyBundles(cart: Cart, bundles: List[Bundle]): Cart = bundles match {
+    private[app] def applyBundles(cart: Cart, bundles: List[Bundle]): Cart = bundles match {
         case Nil => cart // All bundles have been applied or tried.
         case bundle :: tail => applyBundles(applyBundle(cart, bundle), tail)
     }
     
     /** Process all BundleItems for this Bundle. */
-    def applyBundle(cart: Cart, bundle: Bundle): Cart = {
+    private[app] def applyBundle(cart: Cart, bundle: Bundle): Cart = {
         // Recursive
         def inner(
             items: List[PricedItem], bundleItems: List[BundleItem]
@@ -121,7 +121,7 @@ object CartService {
     }
     
     // TODO: Replace with parameterized function instead of hard coded types which have to be referenced and maintained in two separate places (i.e. case class and this function).
-    def applyDiscount(
+    private[app] def applyDiscount(
         bundleItem: BundleItem, discount: Discount
     ): AppliedBundleItem = discount match {
         
@@ -138,12 +138,12 @@ object CartService {
                 bundleItem, discount, bundleItem.item.price * fewerQty.qty)
     }
     
-    def cartTotal(cart: Cart): Cart = {
+    private[app] def cartTotal(cart: Cart): Cart = {
         val result = cart.items.foldRight(0.0)((item, acc) => item.price + acc)
         cart.copy(total = round(result))
     }
     
-    def minTotal(a: Cart, b: Cart): Cart = if(a.total < b.total) a else b
+    private[app] def minTotal(a: Cart, b: Cart): Cart = if(a.total < b.total) a else b
 }
 
 private[app] sealed trait Discount

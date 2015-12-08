@@ -4,7 +4,7 @@ import bundle_pricing.lab2.app._
 import bundle_pricing.lab2.app.CartService._
 import bundle_pricing.lab2.app.BundleService._
 
-object BundlePricing_client_3 {
+object BundlePricing_client_5 {
 
   /** Simple items with unit price */
   val alpo = Item("Alpo Chicken 3oz", 0.89)       //> alpo  : bundle_pricing.lab2.app.Item = Item(Alpo Chicken 3oz,0.89)
@@ -15,6 +15,7 @@ object BundlePricing_client_3 {
   val ipa = Item("Big Daddy IPA 6 pack", 7.99)    //> ipa  : bundle_pricing.lab2.app.Item = Item(Big Daddy IPA 6 pack,7.99)
   val bread = Item("Wonder Bread", 1.29)          //> bread  : bundle_pricing.lab2.app.Item = Item(Wonder Bread,1.29)
   val butter = Item("Butter Stick", 0.89)         //> butter  : bundle_pricing.lab2.app.Item = Item(Butter Stick,0.89)
+  
   
   // Empty cart
   val cart1 = getCart                             //> cart1  : bundle_pricing.lab2.app.Cart = Cart(List(),0.0)
@@ -46,14 +47,22 @@ object BundlePricing_client_3 {
                                                   //| ),List(BundleItem(Item(Butter Stick,0.89),2)),List(BundleItem(Item(Wonder Br
                                                   //| ead,1.29),1)),Buy loaf of Wonder Bread with 2 sticks of butter and get the s
                                                   //| econd stick free.)
-  bundleMatch(cart3, breadAndButterBundle)        //> res0: Boolean = false
   val cart4 = addToCart(bread, 1, cart3)          //> cart4  : bundle_pricing.lab2.app.Cart = Cart(List(Item(Wonder Bread,1.29), 
                                                   //| Item(Butter Stick,0.89), Item(Butter Stick,0.89), Item(Charmin 4 roll,3.0),
                                                   //|  Item(Charmin 4 roll,3.0), Item(Oscar Meyer Weiners 8 pack,3.59), Item(Alpo
                                                   //|  Chicken 3oz,0.89)),0.0)
+  val result1 = checkout(cart3, List(breadAndButterBundle))
+                                                  //> result1  : bundle_pricing.lab2.app.Cart = Cart(List(Item(Butter Stick,0.89)
+                                                  //| , Item(Butter Stick,0.89), Item(Charmin 4 roll,3.0), Item(Charmin 4 roll,3.
+                                                  //| 0), Item(Oscar Meyer Weiners 8 pack,3.59), Item(Alpo Chicken 3oz,0.89)),12.
+                                                  //| 26)
   
-  bundleMatch(cart4, breadAndButterBundle)        //> res1: Boolean = true
+  val result2 = checkout(cart4, List(breadAndButterBundle))
+                                                  //> result2  : bundle_pricing.lab2.app.Cart = Cart(List(AppliedBundleItem(Bundl
+                                                  //| eItem(Item(Butter Stick,0.89),2),ForPriceOf(4),3.56), Item(Wonder Bread,1.2
+                                                  //| 9), Item(Charmin 4 roll,3.0), Item(Charmin 4 roll,3.0), Item(Oscar Meyer We
+                                                  //| iners 8 pack,3.59), Item(Alpo Chicken 3oz,0.89)),15.33)
   
 
-  '''                                             //> res2: Char('\'') = '
+  '''                                             //> res0: Char('\'') = '
 }

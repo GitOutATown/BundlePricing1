@@ -15,12 +15,12 @@ object BundlePricing_client_2 {
   val ipa = Item("Big Daddy IPA 6 pack", 7.99)    //> ipa  : bundle_pricing.lab2.app.Item = Item(Big Daddy IPA 6 pack,7.99)
   
   // Empty cart
-  val cart1 = getCart                             //> cart1  : bundle_pricing.lab2.app.Cart = Cart(List())
+  val cart1 = getCart                             //> cart1  : bundle_pricing.lab2.app.Cart = Cart(List(),0.0)
   
   // Add single item with quantity to cart
   val cart2 = addToCart(alpo, 4, cart1)           //> cart2  : bundle_pricing.lab2.app.Cart = Cart(List(Item(Alpo Chicken 3oz,0.89
                                                   //| ), Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89), Item(Alpo Chick
-                                                  //| en 3oz,0.89)))
+                                                  //| en 3oz,0.89)),0.0)
   
   // Items with quantity
   val shoppingList = List(
@@ -34,7 +34,7 @@ object BundlePricing_client_2 {
   val cart3 = addToCart(shoppingList, cart2)      //> cart3  : bundle_pricing.lab2.app.Cart = Cart(List(Item(Charmin 4 roll,3.0), 
                                                   //| Item(Charmin 4 roll,3.0), Item(Oscar Meyer Weiners 8 pack,3.59), Item(Alpo C
                                                   //| hicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89), 
-                                                  //| Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89)))
+                                                  //| Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89)),0.0)
   
   /** Bundles ***************/
   
@@ -44,23 +44,11 @@ object BundlePricing_client_2 {
                                                   //| dleItem(Item(Alpo Chicken 3oz,0.89),5)),List(),Alpo Chicken 3oz, 5 for price
                                                   //|  of 4)
   
-  bundleMatch(cart2, alpoBundle)                  //> -->bundleMatch cartItems: List(Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicke
-                                                  //| n 3oz,0.89), Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89))
-                                                  //| -->bundleMatch bundle.appliedTo: List(BundleItem(Item(Alpo Chicken 3oz,0.89)
-                                                  //| ,5))
-                                                  //| -->bundleMatch bundle.appliedTo: List()
-                                                  //| res0: Boolean = false
+  bundleMatch(cart2, alpoBundle)                  //> res0: Boolean = false
   
   
   
-  bundleMatch(cart3, alpoBundle)                  //> -->bundleMatch cartItems: List(Item(Charmin 4 roll,3.0), Item(Charmin 4 roll
-                                                  //| ,3.0), Item(Oscar Meyer Weiners 8 pack,3.59), Item(Alpo Chicken 3oz,0.89), I
-                                                  //| tem(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3oz,0.89), Item(Alpo Chicken 3
-                                                  //| oz,0.89), Item(Alpo Chicken 3oz,0.89))
-                                                  //| -->bundleMatch bundle.appliedTo: List(BundleItem(Item(Alpo Chicken 3oz,0.89)
-                                                  //| ,5))
-                                                  //| -->bundleMatch bundle.appliedTo: List()
-                                                  //| res1: Boolean = true
+  bundleMatch(cart3, alpoBundle)                  //> res1: Boolean = true
         
   '''                                             //> res2: Char('\'') = '
 }

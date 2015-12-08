@@ -23,7 +23,6 @@ object BundlePricing_client_4 {
   
   0.89 + 3.59                                     //> res0: Double(4.4799999999999995) = 4.4799999999999995
   
-  itemsTotal(shoppingList)                        //> res1: Double = 4.48
 
-  '''                                             //> res2: Char('\'') = '
+  '''                                             //> res1: Char('\'') = '
 }
