@@ -14,6 +14,9 @@ private[app] case class Cart(
 )
 
 object CartService {
+    
+    import scala.concurrent.Future
+    import scala.concurrent.ExecutionContext.Implicits.global
     import Util.round
     
     def getCart() = Cart(Nil)
@@ -49,7 +52,7 @@ object CartService {
      *  API Calculates minimum cart total per best combination of bundle 
      *  discounts. 
      */
-    def checkout(cart: Cart, bundles: List[Bundle]): Cart = {
+    def checkout(cart: Cart, bundles: List[Bundle]): Future[Cart] = Future {
         val applicableBundles = bundles.filter(bundleMatch(cart, _))
         val bundlePerms = (applicableBundles.permutations).toList
         // Each iteration has original cart but different bundle order. Every possible sequence of bundles are tried.
