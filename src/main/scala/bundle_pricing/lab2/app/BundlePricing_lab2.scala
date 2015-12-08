@@ -14,7 +14,6 @@ private[app] case class BundleItem(
 
 private[app] case class AppliedBundleItem(
     item: BundleItem,
-    discount: Discount,
     price: Double
 ) extends PricedItem
 
@@ -53,8 +52,7 @@ object CartService {
         val bundlePerms = (applicableBundles.permutations).toList
         // Each iteration has original cart but different bundle order. Every possible sequence of bundles are tried.
         val allCartVersions = bundlePerms.map(applyBundles(cart, _))
-        val cartTotals = allCartVersions.map(cartTotal(_)) // TODO: Move this to applyBundles
-        val minCart = cartTotals.reduceLeft(minTotal)
+        val minCart = allCartVersions.reduceLeft(minTotal)
         minCart
     }
     
@@ -73,7 +71,7 @@ object CartService {
      *  with discount). If bundle can't be applied, leaves cart items as found.
      */
     private[app] def applyBundles(cart: Cart, bundles: List[Bundle]): Cart = bundles match {
-        case Nil => cart // All bundles have been applied or tried.
+        case Nil => cartTotal(cart) // All bundles have been applied or tried.
         case bundle :: tail => applyBundles(applyBundle(cart, bundle), tail)
     }
     
@@ -93,22 +91,22 @@ object CartService {
                 // TODO: Replace tuple with BundleContext case class
                 val context = (acc, count, targetQty, targetItem)
                 
-                // Remove cart items that exist in BundleItem.
+                // Remove loose cart items that exist in BundleItem.
                 val result = items.foldRight(context)((item, context) => {
-                    // TODO: NIX: println("item:" + item + " acc:" + context._1 + " count:" + context._2 + " limit:" + context._3)
                     // if count <= targetQty filter out targetItem
                     if(item == targetItem && context._2 < context._3)
                         (context._1, context._2 + 1, context._3, context._4)
                     else (item :: context._1, context._2, context._3, context._4)
                 })
                 
-                // if count == targetQty we have successful application of BundleItem, so recurse with BundleItem replacing filtered-out loose items.
+                // if count == targetQty we have successful application of BundleItem, so recurse with BundleItem replacement of filtered-out loose items.
                 if(result._2 == result._3) {
-                    val addedBundleItem = 
-                        applyDiscount(bundleItem, bundle.discount) :: result._1
+                    val addedBundleItem = applyDiscount(
+                        bundleItem, bundle.discount
+                    ) :: result._1
                     inner(addedBundleItem, tail)
                 }
-                // else unsuccessful application of BundleItem so return to outer with original cart.items
+                // else unsuccessful application of BundleItem so return to outer with original cart items.
                 else cart.items
             }
         } // end inner
@@ -128,14 +126,15 @@ object CartService {
         case pctOff: PercentOff =>
             val originalPrice = bundleItem.item.price * bundleItem.qty
             val percentOff = originalPrice * pctOff.pct
-            AppliedBundleItem(bundleItem, discount, originalPrice - percentOff)
+            AppliedBundleItem(bundleItem, originalPrice - percentOff)
             
         case flatPrice: BundlePrice => 
-            AppliedBundleItem(bundleItem, discount, flatPrice.flat)
-            
+            AppliedBundleItem(bundleItem, flatPrice.flat)
+        
+        // TODO: This is wrong! Flat price must be applied at the Bundle level!
         case fewerQty: ForPriceOf => 
             AppliedBundleItem(
-                bundleItem, discount, bundleItem.item.price * fewerQty.qty)
+                bundleItem, bundleItem.item.price * fewerQty.qty)
     }
     
     private[app] def cartTotal(cart: Cart): Cart = {
@@ -144,6 +143,26 @@ object CartService {
     }
     
     private[app] def minTotal(a: Cart, b: Cart): Cart = if(a.total < b.total) a else b
+
+    // Side-effect
+    def printReceipt(cart: Cart) {
+        cart.items.foreach { pricedItem => pricedItem match {
+            case item: Item =>
+                val identity = item.identity
+                val price = item.price
+                println(s"ITEM:\t\t$identity\t\t$price")
+            case bundled: AppliedBundleItem =>
+                val identity = bundled.item.item.identity
+                val regPrice = round(bundled.item.item.price)
+                val qty = bundled.item.qty
+                val bundPrice = round(bundled.price)
+                val savings = (qty * regPrice) - bundPrice
+                println(s"ITEM:\t\t$identity\t\tQTY:\t\t$qty")
+                //println(s"SPECIAL:\t\t$description\t\t$bundPrice\t\tSAVINGS:\t\t$savings")
+        }}
+        val total = cart.total
+        println(s"TOTAL\t\t$total")
+    }
 }
 
 private[app] sealed trait Discount
@@ -160,11 +179,10 @@ private[app] case class Bundle(
 )
 
 object BundleService {
-    
     ///// Bundle factories /////
     // TODO: Factor out commonalities
     // TODO: Replace Discount case class with function parameter
-            
+    
     /**
      *  N qty of an item for price of M qty of same item.
      *  May have additional qualifiers.
@@ -185,7 +203,7 @@ object BundleService {
      *  number of same item.
      *  May have additional qualifiers.
      *  
-     *  TODO: Multiple items with specific quantities, each for percent off of 
+     *  TODO: Multiple items with various quantities, each for percent off of 
      *  their list price.
      */ 
     def percentPrice(discountItem: Item, qty: Int, pctOff: Double)
@@ -194,8 +212,7 @@ object BundleService {
         val discount = PercentOff(pctOff)
         val appliedTo = BundleItem(discountItem, qty)
         val addQualifier_ = addQualifier.toList.map{
-            case (item, qty) => BundleItem(item, qty)
-        }
+            case (item, qty) => BundleItem(item, qty)}
         Bundle(discount, List(appliedTo), addQualifier_, description)
     }
     
@@ -209,11 +226,9 @@ object BundleService {
                    (description: String): Bundle = {
         val discount = BundlePrice(flatPrice)
         val appliedTo = discountItem.toList.map{
-            case (item, qty) => BundleItem(item, qty)
-        }
+            case (item, qty) => BundleItem(item, qty)}
         val addQualifier_ = addQualifier.toList.map{
-            case (item, qty) => BundleItem(item, qty)
-        }
+            case (item, qty) => BundleItem(item, qty)}
         Bundle(discount, appliedTo, addQualifier_, description)
     }
 }
