@@ -14,6 +14,7 @@ private[app] case class BundleItem(
 
 private[app] case class AppliedBundleItem(
     item: BundleItem,
+    discount: Discount,
     price: Double
 ) extends PricedItem
 
@@ -46,12 +47,11 @@ object CartService {
     }
     
     // TODO: Return future
-    // Calculates minimum cart total per best combination of bundle discounts.
+    /** Calculates minimum cart total per best combination of bundle discounts. */
     def checkout(cart: Cart, bundles: List[Bundle]): Cart = {
         val applicableBundles = bundles.filter(bundleMatch(cart, _))
         val bundlePerms = (applicableBundles.permutations).toList
-        // Each iteration has original cart but different bundle order.
-        // Every possible sequence of bundles are tried.
+        // Each iteration has original cart but different bundle order. Every possible sequence of bundles are tried.
         val allCartVersions = bundlePerms.map(applyBundles(cart, _))
         val cartTotals = allCartVersions.map(cartTotal(_)) // TODO: Move this to applyBundles
         val minCart = cartTotals.reduceLeft(minTotal)
@@ -61,21 +61,23 @@ object CartService {
     /* TODO: Be careful: Cart.items are now PricedItem, which allows for 
      * AppliedBundleItems. This is a risk!
      */
+    // Purpose: initial filter for cart relevancy based on adequate items
+    // without consideration for overlap with other bundles.
     def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
         val required = bundle.appliedTo ++ bundle.addQualifier
         required.forall{ bundleItem =>
             cart.items.count(_ == bundleItem.item) >= bundleItem.qty }
     }
     
-    /* Precicely matches and replaces loose cart items with BundleItems (item qty 
-     * with discount). If bundle can't be applied, leaves cart items as found.
+    /** Precicely matches and replaces loose cart items with BundleItems (item qty 
+     *  with discount). If bundle can't be applied, leaves cart items as found.
      */
     def applyBundles(cart: Cart, bundles: List[Bundle]): Cart = bundles match {
         case Nil => cart // All bundles have been applied or tried.
         case bundle :: tail => applyBundles(applyBundle(cart, bundle), tail)
     }
     
-    // Process all BundleItems
+    /** Process all BundleItems for this Bundle. */
     def applyBundle(cart: Cart, bundle: Bundle): Cart = {
         // Recursive
         def inner(
@@ -87,9 +89,11 @@ object CartService {
                 val count = 0
                 val targetQty = bundleItem.qty
                 val acc = List[PricedItem]()
-                val context = (acc, count, targetQty, targetItem) // TODO: Make BundleContext case class
                 
-                // Remove cart items that exist in BundleItem
+                // TODO: Replace tuple with BundleContext case class
+                val context = (acc, count, targetQty, targetItem)
+                
+                // Remove cart items that exist in BundleItem.
                 val result = items.foldRight(context)((item, context) => {
                     // TODO: NIX: println("item:" + item + " acc:" + context._1 + " count:" + context._2 + " limit:" + context._3)
                     // if count <= targetQty filter out targetItem
@@ -98,31 +102,41 @@ object CartService {
                     else (item :: context._1, context._2, context._3, context._4)
                 })
                 
-                // if count == targetQty we have successful application of BundleItem, 
-                // so recurse with BundleItem replacing filtered-out lose items.
+                // if count == targetQty we have successful application of BundleItem, so recurse with BundleItem replacing filtered-out loose items.
                 if(result._2 == result._3) {
-                    val bundleTotal = 0.0 // TODO: STUB, should be method that applies discount to bundle, but that is why ALL BundleItems must be applied in this method. 
                     val addedBundleItem = 
-                        AppliedBundleItem(bundleItem, bundleTotal) :: result._1
+                        applyDiscount(bundleItem, bundle.discount) :: result._1
                     inner(addedBundleItem, tail)
                 }
-                // else return to outer with original cart.items
+                // else unsuccessful application of BundleItem so return to outer with original cart.items
                 else cart.items
             }
         } // end inner
         
-        // TODO: Where (and how) should the Bundle Discounts be applied?
-        // Currently, I seem to be doing it at each successful BundleItem 
-        // iteration. I think that works for now.
-        
         // Start recursion of BundleItems for this Bundle.
         val appliedItems = inner(cart.items, bundle.appliedTo)
         
-        // Return outer. 
-        // Could be either successful or unsuccessful BundleItem application.
+        // Return outer. Could be either successful or unsuccessful BundleItem application.
         Cart(appliedItems)
+    }
+    
+    // TODO: Replace with parameterized function instead of hard coded types which have to be referenced and maintained in two separate places (i.e. case class and this function).
+    def applyDiscount(
+        bundleItem: BundleItem, discount: Discount
+    ): AppliedBundleItem = discount match {
         
-    } // end applyBundle
+        case pctOff: PercentOff =>
+            val originalPrice = bundleItem.item.price * bundleItem.qty
+            val percentOff = originalPrice * pctOff.pct
+            AppliedBundleItem(bundleItem, discount, originalPrice - percentOff)
+            
+        case flatPrice: BundlePrice => 
+            AppliedBundleItem(bundleItem, discount, flatPrice.flat)
+            
+        case fewerQty: ForPriceOf => 
+            AppliedBundleItem(
+                bundleItem, discount, bundleItem.item.price * fewerQty.qty)
+    }
     
     def cartTotal(cart: Cart): Cart = {
         val result = cart.items.foldRight(0.0)((item, acc) => item.price + acc)
