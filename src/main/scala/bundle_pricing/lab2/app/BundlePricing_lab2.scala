@@ -1,11 +1,11 @@
 package bundle_pricing.lab2.app
 
-sealed trait Priced { def bundlePrice: Double }
+sealed trait Priced { def price: Double }
 
 /** API Create catalog item. */
 case class Item(
     identity: String,
-    bundlePrice: Double
+    price: Double
 ) extends Priced
 
 private[app] case class Cart(
@@ -127,12 +127,12 @@ object CartService {
         
         val originalPrice = (for{
             appliedTo <- bundle.appliedTo
-        } yield appliedTo.item.bundlePrice * appliedTo.qty).sum
+        } yield appliedTo.item.price * appliedTo.qty).sum
         
         val addQualifPrice = (for{
             addQualifier <- bundle.addQualifier
             if(addQualifier != null)
-        } yield addQualifier.item.bundlePrice * addQualifier.qty).sum
+        } yield addQualifier.item.price * addQualifier.qty).sum
         
         val newBundle = bundle.copy(
             beforeDiscount = round(originalPrice + addQualifPrice))
@@ -140,21 +140,21 @@ object CartService {
         bundle.discount match {
             case pctOff: PercentOff =>
                 val percentOff = originalPrice * pctOff.pct
-                newBundle.copy(bundlePrice = round((originalPrice - percentOff) + addQualifPrice))
+                newBundle.copy(price = round((originalPrice - percentOff) + addQualifPrice))
                 
             case flatPrice: BundlePrice => 
-                newBundle.copy(bundlePrice = round(flatPrice.flat + addQualifPrice))
+                newBundle.copy(price = round(flatPrice.flat + addQualifPrice))
             
             case fewerQty: ForPriceOf =>
                 val fewerPrice = (for(
                     bundleItem <- bundle.appliedTo  
-                ) yield bundleItem.item.bundlePrice * fewerQty.qty).sum
-                newBundle.copy(bundlePrice = fewerPrice + addQualifPrice)
+                ) yield bundleItem.item.price * fewerQty.qty).sum
+                newBundle.copy(price = fewerPrice + addQualifPrice)
         }
     } // end applyDiscount
     
     private[app] def cartTotal(cart: Cart): Cart = {
-        val result = cart.items.foldRight(0.0)((item, acc) => item.bundlePrice + acc)
+        val result = cart.items.foldRight(0.0)((item, acc) => item.price + acc)
         cart.copy(total = round(result))
     }
     
@@ -166,7 +166,7 @@ object CartService {
         cart.items.foreach { pricedItem => pricedItem match {
             case item: Item =>
                 val identity = item.identity
-                val price = round(item.bundlePrice)
+                val price = round(item.price)
                 println(s"ITEM:\t$identity\t$price")
             case bundle: Bundle =>
                 println(".....................")
@@ -174,7 +174,7 @@ object CartService {
                     bundleItem <- bundle.appliedTo
                     identity = bundleItem.item.identity
                     addQualifier <- bundle.addQualifier
-                    itemPrice = round(bundleItem.item.bundlePrice)
+                    itemPrice = round(bundleItem.item.price)
                     qty = bundleItem.qty
                 } yield {
                     println(s"BUNDLE:\t$identity\tQTY:\t$qty")
@@ -185,7 +185,7 @@ object CartService {
                     }
                 }
                 val regPrice = round(bundle.beforeDiscount)
-                val bundPrice = round(bundle.bundlePrice)
+                val bundPrice = round(bundle.price)
                 val savings = round(regPrice - bundPrice)
                 val description = bundle.description
                 println(s"$description\t$bundPrice\nSAVINGS:\t$savings")
@@ -234,7 +234,7 @@ private[app] case class Bundle(
     addQualifier: List[BundleItem],
     description: String,
     beforeDiscount: Double = 0.0,
-    bundlePrice: Double = 0.0
+    price: Double = 0.0
 ) extends Priced
 
 private[app] case class BundleItem(
