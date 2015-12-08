@@ -188,7 +188,7 @@ object CartService {
                 val bundPrice = round(bundle.bundlePrice)
                 val savings = round(regPrice - bundPrice)
                 val description = bundle.description
-                println(s"$description\t$bundPrice\tSAVINGS:\t$savings")
+                println(s"$description\t$bundPrice\nSAVINGS:\t$savings")
                 println(".....................")
         }}
         val total = cart.total
