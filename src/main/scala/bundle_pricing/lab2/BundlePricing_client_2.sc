@@ -42,13 +42,21 @@ object BundlePricing_client_2 {
     forPriceOfQty(alpo, 5, 4)()("Alpo Chicken 3oz, 5 for price of 4")
                                                   //> alpoBundle  : bundle_pricing.lab2.app.Bundle = Bundle(ForPriceOf(4),List(Bun
                                                   //| dleItem(Item(Alpo Chicken 3oz,0.89),5)),List(),Alpo Chicken 3oz, 5 for price
-                                                  //|  of 4)
+                                                  //|  of 4,0.0,0.0)
+  val result1 = checkout(cart3, List(alpoBundle)) //> result1  : bundle_pricing.lab2.app.Cart = Cart(List(Bundle(ForPriceOf(4),Lis
+                                                  //| t(BundleItem(Item(Alpo Chicken 3oz,0.89),5)),List(),Alpo Chicken 3oz, 5 for 
+                                                  //| price of 4,4.45,3.56), Item(Charmin 4 roll,3.0), Item(Charmin 4 roll,3.0), I
+                                                  //| tem(Oscar Meyer Weiners 8 pack,3.59)),13.15)
+  println("-----------------")                    //> -----------------
+  printReceipt(result1)                           //> Alpo Chicken 3oz, 5 for price of 4	3.56
+                                                  //| SAVINGS:	0.89
+                                                  //| ITEM:		Charmin 4 roll		3.0
+                                                  //| ITEM:		Charmin 4 roll		3.0
+                                                  //| ITEM:		Oscar Meyer Weiners 8 pack		3.59
+                                                  //| TOTAL		13.15
+                                    
   
-  bundleMatch(cart2, alpoBundle)                  //> res0: Boolean = false
-  
-  
-  
-  bundleMatch(cart3, alpoBundle)                  //> res1: Boolean = true
+
         
-  '''                                             //> res2: Char('\'') = '
+  '''                                             //> res0: Char('\'') = '
 }
