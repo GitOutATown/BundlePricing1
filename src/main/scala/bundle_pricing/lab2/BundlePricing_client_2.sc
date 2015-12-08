@@ -57,6 +57,6 @@ object BundlePricing_client_2 {
                                     
   
 
-        
+       
   '''                                             //> res0: Char('\'') = '
 }

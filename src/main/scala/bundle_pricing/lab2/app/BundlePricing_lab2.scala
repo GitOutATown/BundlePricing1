@@ -2,6 +2,7 @@ package bundle_pricing.lab2.app
 
 sealed trait Priced { def bundlePrice: Double }
 
+/** API Create catalog item. */
 case class Item(
     identity: String,
     bundlePrice: Double
@@ -17,18 +18,26 @@ object CartService {
     
     def getCart() = Cart(Nil)
     
-    // Single item
+    ///// API Add to cart /////
+    
+    /** 
+     *  Single item 
+     */
     def addToCart(item: Item, cart: Cart): Cart = {
         cart.copy(items = item :: cart.items)
     }
     
-    // Multiple of same item
+    /** 
+     *  Multiple of same item 
+     */
     def addToCart(item: Item, qty: Int, cart: Cart): Cart = {
         if(qty == 0) cart
         else addToCart(item, qty - 1, cart.copy(items = item :: cart.items))
     }
     
-    // Multiple items, each with variable quanties
+    /** 
+     *  Multiple items, each with variable quanties 
+     */
     @annotation.tailrec
     def addToCart(items: List[(Item, Int)], cart: Cart): Cart = items match {
         case Nil => cart
@@ -36,7 +45,10 @@ object CartService {
     }
     
     // TODO: Return future
-    /** Calculates minimum cart total per best combination of bundle discounts. */
+    /** 
+     *  API Calculates minimum cart total per best combination of bundle 
+     *  discounts. 
+     */
     def checkout(cart: Cart, bundles: List[Bundle]): Cart = {
         val applicableBundles = bundles.filter(bundleMatch(cart, _))
         val bundlePerms = (applicableBundles.permutations).toList
@@ -46,7 +58,8 @@ object CartService {
         minCart
     }
     
-    /** Initial filter for cart relevancy based on adequate items
+    /** 
+     *  Initial filter for cart relevancy based on adequate item qty
      *  without consideration for overlap with other bundles.
      */
     private[app] def bundleMatch(cart: Cart, bundle: Bundle): Boolean = {
@@ -55,16 +68,19 @@ object CartService {
             cart.items.count(_ == bundleItem.item) >= bundleItem.qty }
     }
     
-    /** Matches and replaces loose cart items with BundleItems (item qty 
+    /** 
+     *  Matches and replaces loose cart items with BundleItems (item qty 
      *  with discount). If bundle can't be applied, leaves cart items as found.
      */
     private[app] def applyBundles(cart: Cart, bundles: List[Bundle])
-    : Cart = bundles match {
+        : Cart = bundles match {
         case Nil => cartTotal(cart) // All bundles have been applied or tried.
         case bundle :: tail => applyBundles(applyBundle(cart, bundle), tail)
     }
     
-    /** Process all BundleItems for this Bundle. */
+    /** 
+     *  Process all BundleItems for this Bundle. 
+     */
     private[app] def applyBundle(cart: Cart, bundle: Bundle): Cart = {
         // Recursive
         def inner(
@@ -82,7 +98,7 @@ object CartService {
                 // TODO: Replace tuple with BundleContext case class
                 val context = (acc, count, targetQty, targetItem)
                 
-                // Remove loose cart items that exist in BundleItem.
+                // Match and remove loose cart items that exist in BundleItem.
                 val result = items.foldRight(context)((item, context) => {
                     // if count < targetQty filter out targetItem
                     if(item == targetItem && context._2 < context._3)
@@ -180,10 +196,31 @@ private[app] case class PercentOff(pct: Double) extends Discount
 private[app] case class BundlePrice(flat: Double) extends Discount
 private[app] case class ForPriceOf(qty: Int) extends Discount
 
-/** Aggregation of required items, with applied discount.
+/** 
+ *  Aggregation of required items, with applied discount.
  *  Bundle price may be result of either percentage or flat or N for M discounts, 
- *  but is applied to all BundleItems. Current model, however, can only hold 
- *  multiple BundleItems for flat price discount.
+ *  but is applied as an aggregate to all BundleItems. Current model, however, 
+ *  can only hold multiple appliedTo BundleItems for flat price discount.
+ *  
+ *  @param discount is the Discount type (i.e. percent off, flat rate, N for M)
+ *  
+ *  @param appliedTo are the items whose prices are affected by the discount. Currently
+ *  only BundlePrice discount can support multiple appliedTo BundleItems.
+ *  
+ *  @param addQualifier is not directly affected by the discount. If extant, it 
+ *  is a bundle requirement. Its regular price is included in the aggregated 
+ *  bundle price.
+ *  
+ *  @param description is the description of the bundle discount (i.e. the type,
+ *  the items which directly receive the discount, and the other required items.
+ *  
+ *  @param beforeDiscount is aggregated bundle price before discount applied to 
+ *  appliedTo items.
+ *  
+ *  @param bundlePrice is the aggregated price for all items in the bundle
+ *  including appliedTo and addQualifier. bundlePrice, at this iterative
+ *  stage, is primarily a mechanism for tallying the cart total. It also 
+ *  indicates the value of the bundle and is used to calculate savings.
  */
 private[app] case class Bundle(
     discount: Discount,
@@ -200,10 +237,11 @@ private[app] case class BundleItem(
 )
 
 object BundleService {
-    ///// Bundle factories /////
+    
+    ///// API Bundle factories /////
     // TODO: Factor out commonalities
     // TODO: Replace Discount case class with function parameter
-    
+        
     /**
      *  N qty of an item for price of M qty of same item.
      *  May have additional qualifiers.
