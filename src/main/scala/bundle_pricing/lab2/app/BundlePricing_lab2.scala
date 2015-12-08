@@ -223,7 +223,7 @@ private[app] case class ForPriceOf(qty: Int) extends Discount
  *  @param beforeDiscount is aggregated bundle price before discount applied to 
  *  appliedTo items.
  *  
- *  @param bundlePrice is the aggregated price for all items in the bundle
+ *  @param price is the aggregated price for all items in the bundle
  *  including appliedTo and addQualifier. bundlePrice, at this iterative
  *  stage, is primarily a mechanism for tallying the cart total. It also 
  *  indicates the value of the bundle and is used to calculate savings.
