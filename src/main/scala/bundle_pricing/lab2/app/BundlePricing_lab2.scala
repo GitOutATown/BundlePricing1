@@ -162,12 +162,14 @@ object CartService {
 
     // Side-effect. TODO: Move this to separate file.
     def printReceipt(cart: Cart) {
+        println("-------RECEIPT-------")
         cart.items.foreach { pricedItem => pricedItem match {
             case item: Item =>
                 val identity = item.identity
                 val price = round(item.bundlePrice)
-                println(s"ITEM:\t\t$identity\t\t$price")
+                println(s"ITEM:\t$identity\t$price")
             case bundle: Bundle =>
+                println(".....................")
                 for{
                     bundleItem <- bundle.appliedTo
                     identity = bundleItem.item.identity
@@ -175,21 +177,23 @@ object CartService {
                     itemPrice = round(bundleItem.item.bundlePrice)
                     qty = bundleItem.qty
                 } yield {
-                    println(s"BUNDLE:\t$identity\tQTY:\t\t$qty")
+                    println(s"BUNDLE:\t$identity\tQTY:\t$qty")
                     if(addQualifier != null) {
                         val aqIdent = addQualifier.item.identity
                         val aqQty = addQualifier.qty
-                        println(s"\t\t\t\t\t$aqIdent\tQTY:\t\t$aqQty")
+                        println(s"\t$aqIdent\tQTY:\t$aqQty")
                     }
                 }
                 val regPrice = round(bundle.beforeDiscount)
                 val bundPrice = round(bundle.bundlePrice)
                 val savings = round(regPrice - bundPrice)
                 val description = bundle.description
-                println(s"$description\t$bundPrice\nSAVINGS:\t$savings")
+                println(s"$description\t$bundPrice\tSAVINGS:\t$savings")
+                println(".....................")
         }}
         val total = cart.total
         println(s"TOTAL\t\t$total")
+        println("--------------------")
     }
 }
 
