@@ -7,16 +7,6 @@ case class Item(
     price: Double
 ) extends PricedItem
 
-private[app] case class BundleItem(
-    item: Item,
-    qty: Int
-)
-
-private[app] case class AppliedBundleItem(
-    item: BundleItem,
-    price: Double
-) extends PricedItem
-
 private[app] case class Cart(
     items: List[PricedItem],
     total: Double = 0.0
@@ -81,7 +71,9 @@ object CartService {
         def inner(
             items: List[PricedItem], bundleItems: List[BundleItem]
         ): List[PricedItem] = bundleItems match {
-            case Nil => items // Successful application of all BundleItems. Any failure shorcuts to outer, returning original cart.items.
+            case Nil => // Successful application of all BundleItems. Any failure shorcuts to outer, returning original cart.items.
+                val appliedBundle = applyDiscount(bundle) 
+                appliedBundle :: items 
             case bundleItem :: tail => {
                 val targetItem = bundleItem.item
                 val count = 0
@@ -93,48 +85,49 @@ object CartService {
                 
                 // Remove loose cart items that exist in BundleItem.
                 val result = items.foldRight(context)((item, context) => {
-                    // if count <= targetQty filter out targetItem
+                    // if count < targetQty filter out targetItem
                     if(item == targetItem && context._2 < context._3)
                         (context._1, context._2 + 1, context._3, context._4)
                     else (item :: context._1, context._2, context._3, context._4)
                 })
                 
-                // if count == targetQty we have successful application of BundleItem, so recurse with BundleItem replacement of filtered-out loose items.
-                if(result._2 == result._3) {
-                    val addedBundleItem = applyDiscount(
-                        bundleItem, bundle.discount
-                    ) :: result._1
-                    inner(addedBundleItem, tail)
-                }
+                // if count == targetQty we have successful application of BundleItem, so recurse with bundle items removed from loose cart items.
+                if(result._2 == result._3) inner(result._1, tail)
                 // else unsuccessful application of BundleItem so return to outer with original cart items.
                 else cart.items
             }
         } // end inner
         
         // Start recursion of BundleItems for this Bundle.
-        val appliedItems = inner(cart.items, bundle.appliedTo)
+        val appliedItems = inner(cart.items, bundle.appliedTo ++ bundle.addQualifier)
         
         // Return outer. Could be either successful or unsuccessful BundleItem application.
         Cart(appliedItems)
     }
     
     // TODO: Replace with parameterized function instead of hard coded types which have to be referenced and maintained in two separate places (i.e. case class and this function).
-    private[app] def applyDiscount(
-        bundleItem: BundleItem, discount: Discount
-    ): AppliedBundleItem = discount match {
+    private[app] def applyDiscount(bundle: Bundle): AppliedBundle = 
+        bundle.discount match {
         
         case pctOff: PercentOff =>
-            val originalPrice = bundleItem.item.price * bundleItem.qty
+            val originalPrice = (for(
+                bundleItem <- bundle.appliedTo
+            ) yield bundleItem.item.price * bundleItem.qty).sum
             val percentOff = originalPrice * pctOff.pct
-            AppliedBundleItem(bundleItem, originalPrice - percentOff)
+            AppliedBundle(
+                bundle.appliedTo, 
+                originalPrice - percentOff, 
+                bundle.description
+            )
             
         case flatPrice: BundlePrice => 
-            AppliedBundleItem(bundleItem, flatPrice.flat)
+            AppliedBundle(bundle.appliedTo, flatPrice.flat, bundle.description)
         
-        // TODO: This is wrong! Flat price must be applied at the Bundle level!
-        case fewerQty: ForPriceOf => 
-            AppliedBundleItem(
-                bundleItem, bundleItem.item.price * fewerQty.qty)
+        case fewerQty: ForPriceOf =>
+            val fewerPrice = (for(
+                bundleItem <- bundle.appliedTo  
+            ) yield bundleItem.item.price * fewerQty.qty).sum
+            AppliedBundle(bundle.appliedTo, fewerPrice, bundle.description)
     }
     
     private[app] def cartTotal(cart: Cart): Cart = {
@@ -151,14 +144,20 @@ object CartService {
                 val identity = item.identity
                 val price = item.price
                 println(s"ITEM:\t\t$identity\t\t$price")
-            case bundled: AppliedBundleItem =>
-                val identity = bundled.item.item.identity
-                val regPrice = round(bundled.item.item.price)
-                val qty = bundled.item.qty
-                val bundPrice = round(bundled.price)
-                val savings = (qty * regPrice) - bundPrice
-                println(s"ITEM:\t\t$identity\t\tQTY:\t\t$qty")
-                //println(s"SPECIAL:\t\t$description\t\t$bundPrice\t\tSAVINGS:\t\t$savings")
+            case bundle: AppliedBundle =>
+                val regPrice = (for{
+                    bundleItem <- bundle.appliedTo
+                    identity = bundleItem.item.identity
+                    regPrice = bundleItem.item.price
+                    qty = bundleItem.qty
+                } yield {
+                    println(s"BUNDLE:\t\t$identity\t\tQTY:\t\t$qty")
+                    regPrice * qty
+                }).sum
+                val bundPrice = round(bundle.price)
+                val savings = regPrice - bundPrice
+                val description = bundle.description
+                println(s"SPECIAL:\t\t$description\t\t$bundPrice\t\tSAVINGS:\t\t$savings")
         }}
         val total = cart.total
         println(s"TOTAL\t\t$total")
@@ -170,13 +169,29 @@ private[app] case class PercentOff(pct: Double) extends Discount
 private[app] case class BundlePrice(flat: Double) extends Discount
 private[app] case class ForPriceOf(qty: Int) extends Discount
 
-// Aggregation of required items, with applied discount
+/** Aggregation of required items, with applied discount */
 private[app] case class Bundle(
     discount: Discount,
     appliedTo: List[BundleItem],
     addQualifier: List[BundleItem],
     description: String
 )
+
+private[app] case class BundleItem(
+    item: Item,
+    qty: Int
+)
+
+/** Bundle price may be result of either percentage or flat or N for M discounts, 
+ *  but is applied to all BundleItems. Current model, however, can only hold 
+ *  multiple BundleItems for flat price discount.
+ */
+// TODO: Nix this and add price field and extend PricedItem
+private[app] case class AppliedBundle(
+    appliedTo: List[BundleItem],
+    price: Double,
+    description: String
+) extends PricedItem
 
 object BundleService {
     ///// Bundle factories /////
