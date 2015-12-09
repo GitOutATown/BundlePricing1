@@ -19,9 +19,9 @@ object CartService {
     import scala.concurrent.ExecutionContext.Implicits.global
     import Util.round
     
-    def getCart() = Cart(Nil)
+    ///// API Cart /////
     
-    ///// API Add to cart /////
+    def getCart() = Cart(Nil)
     
     /** 
      *  Single item 
