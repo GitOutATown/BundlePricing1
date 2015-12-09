@@ -9,7 +9,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object BundlePricing_demo5 extends App {
     
     /**
-     * THIS TEST IS FAILING.
      * Demonstrates dependency on additional qualifiers, i.e.
      * middle brackets (which can be empty). In this demo the
      * bundle wants an additional qualifier with quantity of 5
@@ -19,7 +18,7 @@ object BundlePricing_demo5 extends App {
     val i1 = Item("One", 1.0)
     val i2 = Item("Two", 1.0)
     val i3 = Item("Three", 1.0)
-    val addQual = Item("Not Missing", 1.0)
+    val addQual = Item("Qualifier", 1.0)
     
     val shoppingList = List((i1, 3), (i2, 1), (i3, 2), (addQual, 10))
     

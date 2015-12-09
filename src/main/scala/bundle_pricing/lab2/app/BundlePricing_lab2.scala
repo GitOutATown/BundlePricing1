@@ -168,22 +168,28 @@ object CartService {
                 val identity = item.identity
                 val price = round(item.price)
                 println(s"ITEM:\t$identity\t$price")
+                
             case bundle: Bundle =>
                 println(".....................")
+                println(s"BUNDLE:")
+                
                 for{
                     bundleItem <- bundle.appliedTo
                     identity = bundleItem.item.identity
-                    addQualifier <- bundle.addQualifier
                     itemPrice = round(bundleItem.item.price)
                     qty = bundleItem.qty
+                } yield println(s"$identity\tQTY:\t$qty")
+                
+                for{
+                    addQualifier <- bundle.addQualifier
                 } yield {
-                    println(s"BUNDLE:\t$identity\tQTY:\t$qty")
                     if(addQualifier != null) {
                         val aqIdent = addQualifier.item.identity
                         val aqQty = addQualifier.qty
-                        println(s"\t$aqIdent\tQTY:\t$aqQty")
+                        println(s"$aqIdent\tQTY:\t$aqQty")
                     }
                 }
+                
                 val regPrice = round(bundle.beforeDiscount)
                 val bundPrice = round(bundle.price)
                 val savings = round(regPrice - bundPrice)
