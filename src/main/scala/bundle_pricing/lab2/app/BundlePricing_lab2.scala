@@ -160,25 +160,25 @@ object CartService {
     
     private[app] def minTotal(a: Cart, b: Cart): Cart = if(a.total < b.total) a else b
 
-    // Side-effect. TODO: Move this to separate file.
+    // Side-effect. TODO: Move this to separate file.    
     def printReceipt(cart: Cart) {
-        println("-------RECEIPT-------")
+        val receiptBuilder = new StringBuilder("-------RECEIPT-------")
         cart.items.foreach { pricedItem => pricedItem match {
             case item: Item =>
                 val identity = item.identity
                 val price = round(item.price)
-                println(s"ITEM:\t$identity\t$price")
+                receiptBuilder.append(s"\nITEM:\t$identity\t$price")
                 
             case bundle: Bundle =>
-                println(".....................")
-                println(s"BUNDLE:")
+                receiptBuilder.append("\n.....................")
+                receiptBuilder.append(s"\nBUNDLE:")
                 
                 for{
                     bundleItem <- bundle.appliedTo
                     identity = bundleItem.item.identity
                     itemPrice = round(bundleItem.item.price)
                     qty = bundleItem.qty
-                } yield println(s"$identity\tQTY:\t$qty")
+                } yield receiptBuilder.append(s"\n$identity\tQTY:\t$qty")
                 
                 for{
                     addQualifier <- bundle.addQualifier
@@ -186,7 +186,7 @@ object CartService {
                     if(addQualifier != null) {
                         val aqIdent = addQualifier.item.identity
                         val aqQty = addQualifier.qty
-                        println(s"$aqIdent\tQTY:\t$aqQty")
+                        receiptBuilder.append(s"\n$aqIdent\tQTY:\t$aqQty")
                     }
                 }
                 
@@ -194,13 +194,14 @@ object CartService {
                 val bundPrice = round(bundle.price)
                 val savings = round(regPrice - bundPrice)
                 val description = bundle.description
-                println(s"$description\t$bundPrice\nSAVINGS:\t$savings")
-                println(".....................")
+                receiptBuilder.append(s"\n$description\t$bundPrice\nSAVINGS:\t$savings")
+                receiptBuilder.append("\n.....................")
         }}
         val total = cart.total
-        println(s"TOTAL\t\t$total")
-        println("--------------------")
-    }
+        receiptBuilder.append(s"\nTOTAL\t\t$total")
+        receiptBuilder.append("\n--------------------")
+        println(receiptBuilder.toString)
+    } // end printReciept 
 }
 
 private[app] sealed trait Discount
