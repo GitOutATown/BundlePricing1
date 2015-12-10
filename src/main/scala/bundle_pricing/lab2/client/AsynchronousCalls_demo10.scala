@@ -45,8 +45,12 @@ object AsynchronousCalls_demo10 extends App {
     // Fire off all bundles in separate checkouts
     bundles.foreach{                   
         checkout(cart2, _).onComplete {
-            case Success(cart) => printReceipt(cart)
-            case Failure(e) => println(e) 
+            case Success(cart) =>
+                receipt(cart).onComplete{
+                    case Success(r) => println(r)
+                    case Failure(e) => println(s"Failed to print recipt: $e")
+                }
+            case Failure(e) => println(s"Checkout failed: $e") 
         }
     }
     

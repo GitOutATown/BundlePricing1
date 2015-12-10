@@ -43,8 +43,12 @@ object BundlePricing_demo2 extends App {
         forPriceOfQty(alpo, 5, 4)()("Alpo Chicken 3oz, 5 for price of 4")
   
     checkout(cart3, List(alpoBundle)).onComplete {
-        case Success(cart) => printReceipt(cart)
-        case Failure(e) => println(e)
+        case Success(cart) =>
+            receipt(cart).onComplete{
+                case Success(r) => println(r)
+                case Failure(e) => println(s"Failed to print recipt: $e")
+            }
+        case Failure(e) => println(s"Checkout failed: $e") 
     }
     
     Thread.sleep(3000)

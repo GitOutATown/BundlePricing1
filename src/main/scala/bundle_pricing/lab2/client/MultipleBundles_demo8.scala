@@ -31,8 +31,12 @@ object MultipleBundles_demo8 extends App {
     val bundles = List(flat2, flat3, pctOff)
     
     checkout(cart2, bundles).onComplete {
-        case Success(cart) => printReceipt(cart)
-        case Failure(e) => println(e) 
+        case Success(cart) =>
+            receipt(cart).onComplete{
+                case Success(r) => println(r)
+                case Failure(e) => println(s"Failed to print recipt: $e")
+            }
+        case Failure(e) => println(s"Checkout failed: $e")  
     }
     
     Thread.sleep(3000)

@@ -27,8 +27,12 @@ object BundlePricing_demo3 extends App {
     val flatPrice = bundlePrice(3.0, (i1, 3), (i2, 1), (i3, 2))()("Test flat price.")
 
     checkout(cart2, List(flatPrice)).onComplete {
-        case Success(cart) => printReceipt(cart)
-        case Failure(e) => println(e) 
+        case Success(cart) =>
+            receipt(cart).onComplete{
+                case Success(r) => println(r)
+                case Failure(e) => println(s"Failed to print recipt: $e")
+            }
+        case Failure(e) => println(s"Checkout failed: $e")  
     }
     
     Thread.sleep(3000)

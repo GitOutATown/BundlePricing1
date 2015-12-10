@@ -161,7 +161,7 @@ object CartService {
     private[app] def minTotal(a: Cart, b: Cart): Cart = if(a.total < b.total) a else b
 
     // Side-effect. TODO: Move this to separate file.    
-    def printReceipt(cart: Cart) {
+    def receipt(cart: Cart): Future[String] = Future {
         val receiptBuilder = new StringBuilder("-------RECEIPT-------")
         cart.items.foreach { pricedItem => pricedItem match {
             case item: Item =>
@@ -200,7 +200,8 @@ object CartService {
         val total = cart.total
         receiptBuilder.append(s"\nTOTAL\t\t$total")
         receiptBuilder.append("\n--------------------")
-        println(receiptBuilder.toString)
+        
+        receiptBuilder.toString
     } // end printReciept 
 }
 
