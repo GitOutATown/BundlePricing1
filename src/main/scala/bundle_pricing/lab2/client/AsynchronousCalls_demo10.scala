@@ -9,8 +9,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object AsynchronousCalls_demo10 extends App {
     
     /*
-     * Combination of bundles of different types.
-     * flat2 and fourForOne are applied. flat3 and pctOff are not.
+     * Demo for multiple asynchronous checkouts of multiple 
+     * bundles of various types.
      */
     
     val i1 = Item("One", 1.0)
