@@ -54,7 +54,7 @@ object CartService {
     def checkout(cart: Cart, bundles: List[Bundle]): Future[Cart] = Future {
         val applicableBundles = bundles.filter(bundleMatch(cart, _))
         val bundlePerms = (applicableBundles.permutations).toList
-        // Each iteration has original cart but different bundle order. Every possible sequence of bundles are tried.
+        // Each iteration has original cart but different bundle order. Every possible sequence of bundles is tried.
         val allCartVersions = bundlePerms.map(applyBundles(cart, _))
         val minCart = allCartVersions.reduceLeft(minTotal)
         minCart
