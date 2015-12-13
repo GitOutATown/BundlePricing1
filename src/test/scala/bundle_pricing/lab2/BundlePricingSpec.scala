@@ -185,6 +185,36 @@ class BundlePricingSpec extends UnitSpec {
         }
     }
     
+    "Given two bundles with overlapping item criteria and a cart with enough " +
+    "items to satisfy both individually, but not both together, the percent-price " +
+    "bundle" should "be the one that results in the lowest cart total." in {
+        
+        val item1 = Item("Item1", 1.00)
+        
+        val cart = addToCart(item1, 5, getCart)
+        
+        val bundle1 = bundlePrice(2.50, (item1, 3))()(
+            s"3 $item1.identity for $$2.50")
+        
+        val bundle2 = percentPrice(item1, 4, 0.15)()(
+            s"4 $item1.identity for 15% off")
+            
+        val cartBundle1Fut = checkout(cart, List(bundle1))
+        whenReady(cartBundle1Fut) { cart =>
+            assert(cart.total == 4.50)
+        }
+        
+        val cartBundle2Fut = checkout(cart, List(bundle2))
+        whenReady(cartBundle2Fut) { cart =>
+            assert(cart.total == 4.40)
+        }
+        
+        val cartBothBundlesFut = checkout(cart, List(bundle1, bundle2))
+        whenReady(cartBothBundlesFut) { cart =>
+            assert(cart.total == 4.40)
+        }
+    }
+    
     /** Additional qualifier item scenarios */
     
     "An additional qualifier item" should "exist in the cart for the bundle to be applied" in {
