@@ -247,12 +247,13 @@ class BundlePricingSpec extends UnitSpec {
     
     /** Additional qualifier item scenarios */
     
-    "An additional qualifier item" should "exist in the cart for the bundle to be applied" in {
+    "An additional qualifier item" should "exist in the cart for the bundle that requires it to be applied" in {
         val butterStick = Item("Butter Stick", 1.00)
         val bread = Item("3 Seed Bread", 3.99)
         
         val breadAndButterBundle =
-        forPriceOfQty(butterStick, 2, 1)((bread, 1))("Bread with 2 sticks butter, get second stick free.")
+        forPriceOfQty(butterStick, 2, 1)((bread, 1))(
+            "Bread with 2 sticks butter, get second stick free.")
 
         val cart1 = addToCart(List((butterStick, 2)), getCart)
         val cart2 = addToCart(List((butterStick, 2), (bread, 1)), getCart)
