@@ -133,6 +133,26 @@ class BundlePricingSpec extends UnitSpec {
         }
     }
     
+    "The total of a cart with items that match an N-for-price-of-M bundle plus one other " +
+        "item" should "equal the bundle price plus the price of the extra item" in {
+        
+        val nQty = 5
+        val mQty = 4
+        val item1 = Item("Item1", 1.00)
+        val item2 = Item("Item2", 0.99)
+        val bundlePrice = item1.price * mQty
+        
+        val cart = addToCart(List((item1, nQty), (item2, 1)), getCart)
+        
+        val bundle = forPriceOfQty(item1, nQty, mQty)()(
+            s"$nQty item1.identity for the price of $mQty")
+            
+        val cartFut = checkout(cart, List(bundle))
+        whenReady(cartFut) { cart =>
+            assert(cart.total == bundlePrice + item2.price)
+        }
+    }
+    
     /** Overlap scenarios */
     
     "Given two bundles with overlapping item criteria and a cart with enough " +
