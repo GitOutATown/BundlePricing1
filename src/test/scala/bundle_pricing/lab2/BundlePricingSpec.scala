@@ -56,6 +56,25 @@ class BundlePricingSpec extends UnitSpec {
         }
     }
     
+    "The total of a cart with items that match a flat price bundle plus one other" +
+        " item " should "equal the bundle price plus the price of the extra item" in {
+        
+        val numItems = 5
+        val bundlePrice_ = 3.00
+        val item1 = Item("Item1", 1.00)
+        val item2 = Item("Item2", 0.99)
+        
+        val cart = addToCart(List((item1, numItems), (item2, 1)), getCart)
+        
+        val bundle = bundlePrice(bundlePrice_, (item1, numItems))()(
+            s"$numItems $item1.identity for $bundlePrice_")
+        
+        val cartFut = checkout(cart, List(bundle))
+        whenReady(cartFut) { cart =>
+            assert(cart.total == bundlePrice_ + item2.price)
+        }
+    }
+    
     "The total of a cart with a single percent-off-price bundle that exactly " +
         "matches the cart items" should "equal the bundle price" in {
         val numItems = 5
@@ -72,6 +91,26 @@ class BundlePricingSpec extends UnitSpec {
         val cartFut = checkout(cart, List(bundle))
         whenReady(cartFut) { cart =>
             assert(cart.total == bundlePrice)
+        }
+    }
+    
+    "The total of a cart with items that match a percent-off-price bundle plus one other" +
+        " item " should "equal the bundle price plus the price of the extra item" in {
+        val numItems = 5
+        val percentOffAmt = 0.25
+        val item1 = Item("Item1", 1.00)
+        val item2 = Item("Item2", 0.99)
+        val regPrice = (item1.price * numItems)
+        val bundlePrice = regPrice - (regPrice * percentOffAmt)
+        
+        val cart = addToCart(List((item1, numItems), (item2, 1)), getCart)
+        
+        val bundle = percentPrice(item1, numItems, percentOffAmt)()(
+            s"$numItems $item1.identity for $percentOffAmt off")
+    
+        val cartFut = checkout(cart, List(bundle))
+        whenReady(cartFut) { cart =>
+            assert(cart.total == bundlePrice + item2.price)
         }
     }
     
@@ -107,11 +146,48 @@ class BundlePricingSpec extends UnitSpec {
         val bundle1 = bundlePrice(2.50, (item1, 3))()(
             s"3 $item1.identity for $$2.50")
         
-        val bundle2 = bundlePrice(3.50, (item1, 4))()(
-            s"4 $item1.identity for $$3.50")
+        val bundle2 = bundlePrice(3.49, (item1, 4))()(
+            s"4 $item1.identity for $$3.49")
+            
+        val cartBundle1Fut = checkout(cart, List(bundle1))
+        whenReady(cartBundle1Fut) { cart =>
+            assert(cart.total == 4.50)
+        }
+        
+        val cartBundle2Fut = checkout(cart, List(bundle2))
+        whenReady(cartBundle2Fut) { cart =>
+            assert(cart.total == 4.49)
+        }
+        
+        val cartBothBundlesFut = checkout(cart, List(bundle1, bundle2))
+        whenReady(cartBothBundlesFut) { cart =>
+            assert(cart.total == 4.49)
+        }
     }
     
+    /** Additional qualifier item scenarios */
     
+    "An additional qualifier item" should "exist in the cart for the bundle to be applied" in {
+        val butterStick = Item("Butter Stick", 1.00)
+        val bread = Item("3 Seed Bread", 3.99)
+        
+        val breadAndButterBundle =
+        forPriceOfQty(butterStick, 2, 1)((bread, 1))("Bread with 2 sticks butter, get second stick free.")
+
+        val cart1 = addToCart(List((butterStick, 2)), getCart)
+        val cart2 = addToCart(List((butterStick, 2), (bread, 1)), getCart)
+        
+        val checkoutCart1 = checkout(cart1, List(breadAndButterBundle))
+        val checkoutCart2 = checkout(cart2, List(breadAndButterBundle))
+        
+        whenReady(checkoutCart1) { cart =>
+            assert(cart.total == butterStick.price * 2)
+        }
+        
+        whenReady(checkoutCart2) { cart =>
+            assert(cart.total == (butterStick.price * 1) + bread.price)
+        }
+    }
     
     Thread.sleep(500) // Don't immediately terminate the class. Let the Futures receive their callbacks.
 }
