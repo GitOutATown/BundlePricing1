@@ -51,9 +51,12 @@ class BundlePricingSpec2 extends UnitSpec {
         assert(result)
     }
     
-    // Because of cart item quantities only two of the three bundles will qualify
-    // in each bundle list permutation. Because each bundle has a unique bundle
-    // price, each cart returned from apply bundles will have a unique cart total.
+    /* To prove greedy application of bundles by applyBundles, we show the 
+     * first two bundles of each permutation of three are applied. This means
+     * that the same two of three will be applied twice (i.e. with duplicate 
+     * cart totals), resulting in a list of distinct totals that is 1/2 the 
+     * length of the full permutation list.
+     */
     "Because applyBundles is greedy, with these bundle definitions, " +
     "each bundle list permutation" should "have a different cart total" in {
         
@@ -64,12 +67,12 @@ class BundlePricingSpec2 extends UnitSpec {
         val pctOff = percentPrice(item1, 3, 0.4)()("pctOff")
         val nForM = forPriceOfQty(item1, 3, 1)()("nForM")
         
-        val bundlePerm1 = List(flatPrice, pctOff)
-        val bundlePerm2 = List(flatPrice, nForM)
-        val bundlePerm3 = List(pctOff, nForM)
-        val bundlePerm4 = List(pctOff, flatPrice)
-        val bundlePerm5 = List(nForM, flatPrice)
-        val bundlePerm6 = List(nForM, pctOff)
+        val bundlePerm1 = List(flatPrice, pctOff, nForM)
+        val bundlePerm2 = List(flatPrice, nForM, pctOff)
+        val bundlePerm3 = List(pctOff, nForM, flatPrice)
+        val bundlePerm4 = List(pctOff, flatPrice, nForM)
+        val bundlePerm5 = List(nForM, flatPrice, pctOff)
+        val bundlePerm6 = List(nForM, pctOff, flatPrice)
         
         val bundlePerms = List(bundlePerm1, bundlePerm2, bundlePerm3,
                                bundlePerm4, bundlePerm5, bundlePerm6)
@@ -81,12 +84,6 @@ class BundlePricingSpec2 extends UnitSpec {
         
         println(result)
         
-        /* To prove greedy application of bundles by applyBundles, we show the 
-         * first two bundles of each permutation of three are applied. This means
-         * that the same two of three will be applied twice (i.e. with duplicate 
-         * cart totals), resulting in a list of distinct totals that is 1/2 the 
-         * length of the full permutation list.
-         */
         assert(result.length / 2 == result.distinct.length)
     }
 }
