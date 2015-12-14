@@ -7,7 +7,7 @@ import bundlepricing.lab2.app.Util._
 import scala.util.{Success, Failure}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object AsynchronousCalls_demo10 extends App {
+object AsynchronousCallsDemo extends App {
     
     /*
      * Demo for multiple asynchronous checkouts of multiple 
