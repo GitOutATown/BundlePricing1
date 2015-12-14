@@ -1,13 +1,5 @@
 package bundlepricing.app
 
-trait Priced { def price: Double }
-
-/** API Create catalog item. */
-case class Item(
-    identity: String,
-    price: Double
-) extends Priced { require(price > 0) }
-
 private[app] case class Cart(
     items: List[Priced],
     total: Double = 0.0
