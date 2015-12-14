@@ -87,6 +87,8 @@ object BundleService {
     def percentPrice(discountItem: Item, qty: Int, pctOff: Double)
                     (addQualifier: (Item, Int)*)
                     (description: String): Bundle = {
+        require(qty > 0) // instantiation constraint
+        
         val discount = PercentOff(pctOff)
         val appliedTo = BundleItem(discountItem, qty)
         val addQualifier_ = addQualifier.toList.map{
