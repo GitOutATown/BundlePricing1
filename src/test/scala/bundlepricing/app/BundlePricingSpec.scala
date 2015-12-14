@@ -284,14 +284,36 @@ class BundlePricingSpec extends UnitSpec {
     Thread.sleep(500) // Don't immediately terminate execution. Let the Futures receive their callbacks.
 }
 
-class BundlePricingSuite1 extends FunSuite {
+class BundlePricingSuite1 extends FunSuite with Matchers {
     
-    test("An item instantiated with an identity of \"One\" should return identity \"One\".") {
+    test("An Item instantiated with an empty identity should throw an IllegalArgumentException") {
+        an [IllegalArgumentException] should be thrownBy Item("", 1.0)
+    }
+    
+    test("An Item instantiated with an identity of \"One\" should return identity \"One\".") {
         assert(Item("One", 1.0).identity == "One")
     }
     
-    test("An item instantiated with a price of 2.59 should return price 2.59.") {
+    test("An Item instantiated with a price of 2.59 should return price 2.59.") {
         assert(Item("One", 2.59).price == 2.59)
+    }
+
+    test("An Item instantiated with a negative price should throw an IllegalArgumentException") {
+        an [IllegalArgumentException] should be thrownBy Item("One", -1.00)
+    }
+    
+    test("A Bundle instantiated with a negative quantity should throw an IllegalArgumentException") {
+        an [IllegalArgumentException] should be thrownBy forPriceOfQty(Item("TestItem", 1), -1, 1)()("")
+        an [IllegalArgumentException] should be thrownBy forPriceOfQty(Item("TestItem", 1), 1, -1)()("")
+        
+        an [IllegalArgumentException] should be thrownBy bundlePrice(1.0, (Item("TestItem", 1), -1))()("")
+    
+        an [IllegalArgumentException] should be thrownBy percentPrice(Item("TestItem", 1), -1, 0.5)()("")
+    }
+    
+    test("A Bundle instantiated with a Discount with a negative value should throw an IllegalArgumentException") {
+        an [IllegalArgumentException] should be thrownBy bundlePrice(-1.0, (Item("TestItem", 1), 1))()("")
+        an [IllegalArgumentException] should be thrownBy percentPrice(Item("TestItem", 1), 1, -0.5)()("")
     }
 }
 

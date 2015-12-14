@@ -7,6 +7,10 @@ trait Priced { def price: Double }
 case class Item(
     identity: String,
     price: Double
-) extends Priced { require(price > 0) }
+) extends Priced {
+    // instantiation constraints
+    require(identity != "")
+    require(price > 0) 
+}
 
-object CatalogService {}
+// TODO: Factory with Try/Success/Failure

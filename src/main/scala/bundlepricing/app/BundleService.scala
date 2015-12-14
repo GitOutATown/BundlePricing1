@@ -1,9 +1,15 @@
 package bundlepricing.app
 
 private[app] sealed trait Discount
-private[app] case class PercentOff(pct: Double) extends Discount
-private[app] case class BundlePrice(flat: Double) extends Discount
-private[app] case class ForPriceOf(qty: Int) extends Discount
+private[app] case class PercentOff(pct: Double) extends Discount {
+    require(pct > 0)
+}
+private[app] case class BundlePrice(flat: Double) extends Discount {
+    require(flat > 0)
+}
+private[app] case class ForPriceOf(qty: Int) extends Discount {
+    require(qty > 0)
+}
 
 /** 
  *  Aggregation of required items, with applied discount.
@@ -43,7 +49,7 @@ private[app] case class Bundle(
 private[app] case class BundleItem(
     item: Item,
     qty: Int
-)
+) { require(qty > 0)}
 
 object BundleService {
     
@@ -58,6 +64,10 @@ object BundleService {
     def forPriceOfQty(discountItem: Item, nQty: Int, mQty: Int)
                      (addQualifier: (Item, Int)*)
                      (description: String): Bundle = {
+        // instantiation constraints
+        require(nQty > 0) 
+        require(mQty > 0)
+        
         val discount = ForPriceOf(mQty) // TODO: Make this a function?
         val appliedTo = BundleItem(discountItem, nQty)
         val addQualifier_ = 
