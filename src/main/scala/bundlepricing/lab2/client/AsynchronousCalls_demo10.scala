@@ -1,8 +1,9 @@
-package bundle_pricing.lab2.client
+package bundlepricing.lab2.client
 
-import bundle_pricing.lab2.app._
-import bundle_pricing.lab2.app.CartService._
-import bundle_pricing.lab2.app.BundleService._
+import bundlepricing.lab2.app._
+import bundlepricing.lab2.app.CartService._
+import bundlepricing.lab2.app.BundleService._
+import bundlepricing.lab2.app.Util._
 import scala.util.{Success, Failure}
 import scala.concurrent.ExecutionContext.Implicits.global
 

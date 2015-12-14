@@ -1,4 +1,4 @@
-package bundle_pricing.lab2.app
+package bundlepricing.lab2.app
 
 sealed trait Priced { def price: Double }
 
@@ -6,7 +6,7 @@ sealed trait Priced { def price: Double }
 case class Item(
     identity: String,
     price: Double
-) extends Priced
+) extends Priced { require(price > 0) }
 
 private[app] case class Cart(
     items: List[Priced],
@@ -158,51 +158,7 @@ object CartService {
         cart.copy(total = round(result))
     }
     
-    private[app] def minTotal(a: Cart, b: Cart): Cart = if(a.total < b.total) a else b
-
-    // Side-effect. TODO: Move this to separate file.    
-    def receipt(cart: Cart): Future[String] = Future {
-        val receiptBuilder = new StringBuilder("-------RECEIPT-------")
-        cart.items.foreach { pricedItem => pricedItem match {
-            case item: Item =>
-                val identity = item.identity
-                val price = round(item.price)
-                receiptBuilder.append(s"\nITEM:\t$identity\t$price")
-                
-            case bundle: Bundle =>
-                receiptBuilder.append("\n.....................")
-                receiptBuilder.append(s"\nBUNDLE:")
-                
-                for{
-                    bundleItem <- bundle.appliedTo
-                    identity = bundleItem.item.identity
-                    itemPrice = round(bundleItem.item.price)
-                    qty = bundleItem.qty
-                } yield receiptBuilder.append(s"\n$identity\tQTY:\t$qty")
-                
-                for{
-                    addQualifier <- bundle.addQualifier
-                } yield {
-                    if(addQualifier != null) {
-                        val aqIdent = addQualifier.item.identity
-                        val aqQty = addQualifier.qty
-                        receiptBuilder.append(s"\n$aqIdent\tQTY:\t$aqQty")
-                    }
-                }
-                
-                val regPrice = round(bundle.beforeDiscount)
-                val bundPrice = round(bundle.price)
-                val savings = round(regPrice - bundPrice)
-                val description = bundle.description
-                receiptBuilder.append(s"\n$description\t$bundPrice\nSAVINGS:\t$savings")
-                receiptBuilder.append("\n.....................")
-        }}
-        val total = cart.total
-        receiptBuilder.append(s"\nTOTAL\t\t$total")
-        receiptBuilder.append("\n--------------------")
-        
-        receiptBuilder.toString
-    } // end printReciept 
+    private[app] def minTotal(a: Cart, b: Cart): Cart = if(a.total < b.total) a else b 
 }
 
 private[app] sealed trait Discount
@@ -305,14 +261,5 @@ object BundleService {
         Bundle(discount, appliedTo, addQualifier_, description)
     }
 }
-
-object Util {
-    def roundAt(prec: Int)(n: Double): Double = {
-        val scale = math pow(10, prec)
-        (math round n * scale) / scale
-    }
-    val round = roundAt(2)_
-}
-
 
 
