@@ -51,14 +51,16 @@ class BundlePricingSpec2 extends UnitSpec {
         assert(result)
     }
     
-    /* To prove greedy application of bundles by applyBundles, we show the 
-     * first two bundles of each permutation of three are applied. This means
-     * that the same two of three will be applied twice (i.e. with duplicate 
-     * cart totals), resulting in a list of distinct totals that is 1/2 the 
-     * length of the full permutation list.
+    /* 
+     * Each bundle has a distict bundle price. To prove greedy application of 
+     * bundles by applyBundles, we show the first two bundles of each permutation 
+     * of three are applied (due to cart item quantities). This means that the 
+     * same two of three bundles will be applied twice (i.e. with duplicate cart 
+     * totals), resulting in a list of distinct totals that is 1/2 the length of 
+     * the full permutation list.
      */
-    "Because applyBundles is greedy, with these bundle definitions, " +
-    "each bundle list permutation" should "have a different cart total" in {
+    "The list size of distinct cart totals" should "be 1/2 the size " +
+    "of the full bundle permutations list" in {
         
         val item1 = Item("ItemOne", 1.0)
         val cart = addToCart(item1, 7, getCart)
@@ -76,6 +78,33 @@ class BundlePricingSpec2 extends UnitSpec {
         
         val bundlePerms = List(bundlePerm1, bundlePerm2, bundlePerm3,
                                bundlePerm4, bundlePerm5, bundlePerm6)
+                                                              
+        val result = for{
+            bundles <- bundlePerms
+            cartPerm = applyBundles(cart, bundles)
+        } yield cartPerm.total
+        
+        println(result)
+        
+        assert(result.length / 2 == result.distinct.length)
+    }
+    
+    /* 
+     * This is basically a duplicate of the previous test, but here the
+     * permutations are rendered by the List.permutations method, which
+     * is used in the app checkout method.
+     */
+    "Once again, the list size of distinct cart totals" should "be 1/2 the size " +
+    "of the full bundle permutations list" in {
+        
+        val item1 = Item("ItemOne", 1.0)
+        val cart = addToCart(item1, 7, getCart)
+        
+        val flatPrice = bundlePrice(1.99, (item1, 3))()("flatPrice")
+        val pctOff = percentPrice(item1, 3, 0.4)()("pctOff")
+        val nForM = forPriceOfQty(item1, 3, 1)()("nForM")
+        
+        val bundlePerms = List(flatPrice, pctOff, nForM).permutations.toList
                                                               
         val result = for{
             bundles <- bundlePerms
