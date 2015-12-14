@@ -1,4 +1,4 @@
-package bundlepricing.lab2.app
+package bundlepricing.app
 
 trait Priced { def price: Double }
 

@@ -1,4 +1,4 @@
-package bundlepricing.lab2.app
+package bundlepricing.app
 
 private[app] sealed trait Discount
 private[app] case class PercentOff(pct: Double) extends Discount

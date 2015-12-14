@@ -1,11 +1,11 @@
-package bundlepricing.lab2.app
+package bundlepricing.app
 
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 
-import bundlepricing.lab2.app._
-import bundlepricing.lab2.app.CartService._
-import bundlepricing.lab2.app.BundleService._
+import bundlepricing.app._
+import bundlepricing.app.CartService._
+import bundlepricing.app.BundleService._
 
 import scala.concurrent.Future
 import scala.util.{Success, Failure}

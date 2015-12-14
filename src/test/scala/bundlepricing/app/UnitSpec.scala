@@ -1,4 +1,4 @@
-package bundlepricing.lab2.app
+package bundlepricing.app
 
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
