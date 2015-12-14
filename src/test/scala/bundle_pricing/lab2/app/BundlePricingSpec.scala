@@ -1,10 +1,9 @@
-package bundle_pricing.lab2
+package bundle_pricing.lab2.app
 
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 
 import bundle_pricing.lab2.app._
-import bundle_pricing.lab2.app.BundlePrice
 import bundle_pricing.lab2.app.CartService._
 import bundle_pricing.lab2.app.BundleService._
 
@@ -75,6 +74,7 @@ class BundlePricingSpec extends UnitSpec {
         }
     }
     
+    // This also tests the accuracy of percentPrice calculation.
     "The total of a cart with a single percent-off-price bundle that exactly " +
         "matches the cart items" should "equal the bundle price" in {
         val numItems = 5
@@ -114,6 +114,7 @@ class BundlePricingSpec extends UnitSpec {
         }
     }
     
+    // This also tests the accuracy of forPriceOf calculation.
     "The total of a cart with a single N-for-price-of-M bundle that exactly " +
         "matches the cart items" should "equal the bundle price" in {
         
@@ -168,26 +169,30 @@ class BundlePricingSpec extends UnitSpec {
         
         val bundle2 = bundlePrice(3.49, (item1, 4))()(
             s"4 $item1.identity for $$3.49")
-            
+        
+        // Shows cart checkout total with just bundle1.
         val cartBundle1Fut = checkout(cart, List(bundle1))
         whenReady(cartBundle1Fut) { cart =>
             assert(cart.total == 4.50)
         }
         
+        // Shows cart checkout total with just bundle2
         val cartBundle2Fut = checkout(cart, List(bundle2))
         whenReady(cartBundle2Fut) { cart =>
             assert(cart.total == 4.49)
         }
         
+        // checkout cart with both bundle1 and bundle2.
+        // total should match total for bundle2
         val cartBothBundlesFut = checkout(cart, List(bundle1, bundle2))
         whenReady(cartBothBundlesFut) { cart =>
             assert(cart.total == 4.49)
         }
     }
     
-    "Given two bundles with overlapping item criteria and a cart with enough " +
-    "items to satisfy both individually, but not both together, in this case the percent-price " +
-    "bundle" should "be the one that results in the lowest cart total." in {
+    "Given two bundles with overlapping item criteria and a cart with enough items " +
+    "to satisfy both individually, but not both together, the percent-price bundle," +
+    "in this case," should "be the one that results in the lowest cart total." in {
         
         val item1 = Item("Item1", 1.00)
         
@@ -198,26 +203,29 @@ class BundlePricingSpec extends UnitSpec {
         
         val bundle2 = percentPrice(item1, 4, 0.15)()(
             s"4 $item1.identity for 15% off")
-            
+        
+        // Shows resulting total for cart with just bundle1.
         val cartBundle1Fut = checkout(cart, List(bundle1))
         whenReady(cartBundle1Fut) { cart =>
             assert(cart.total == 4.50)
         }
         
+        // Shows resulting total for cart with just bundle2.
         val cartBundle2Fut = checkout(cart, List(bundle2))
         whenReady(cartBundle2Fut) { cart =>
             assert(cart.total == 4.40)
         }
         
+        // Cart that includes both bundles should have total of cart with just bundle2.
         val cartBothBundlesFut = checkout(cart, List(bundle1, bundle2))
         whenReady(cartBothBundlesFut) { cart =>
             assert(cart.total == 4.40)
         }
     }
     
-    "Given two bundles with overlapping item criteria and a cart with enough " +
-    "items to satisfy both individually, but not both together, in this case the flat-price " +
-    "bundle" should "be the one that results in the lowest cart total." in {
+    "Given two bundles with overlapping item criteria and a cart with enough items " +
+    "to satisfy both individually, but not both together, the flat-price bundle, " +
+    "in this case" should "be the one that results in the lowest cart total." in {
         
         val item1 = Item("Item1", 1.00)
         
@@ -239,6 +247,7 @@ class BundlePricingSpec extends UnitSpec {
             assert(cart.total == 4.60)
         }
         
+        // Cart that includes both bundles should have total of cart with just bundle1.
         val cartBothBundlesFut = checkout(cart, List(bundle1, bundle2))
         whenReady(cartBothBundlesFut) { cart =>
             assert(cart.total == 4.50)
@@ -261,16 +270,18 @@ class BundlePricingSpec extends UnitSpec {
         val checkoutCart1 = checkout(cart1, List(breadAndButterBundle))
         val checkoutCart2 = checkout(cart2, List(breadAndButterBundle))
         
+        // Additional qualifier doesn't exist in cart. Bundle price not applied.
         whenReady(checkoutCart1) { cart =>
             assert(cart.total == butterStick.price * 2)
         }
         
+        // Additional qualifier does exist in cart. Bundle price applied.
         whenReady(checkoutCart2) { cart =>
             assert(cart.total == (butterStick.price * 1) + bread.price)
         }
     }
     
-    Thread.sleep(500) // Don't immediately terminate the class. Let the Futures receive their callbacks.
+    Thread.sleep(500) // Don't immediately terminate execution. Let the Futures receive their callbacks.
 }
 
 class BundlePricingSuite1 extends FunSuite {

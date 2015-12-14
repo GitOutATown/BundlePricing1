@@ -1,0 +1,96 @@
+package bundle_pricing.lab2.app
+
+import org.scalatest._
+import org.scalatest.concurrent.ScalaFutures
+
+import bundle_pricing.lab2.app._
+import bundle_pricing.lab2.app.CartService._
+import bundle_pricing.lab2.app.BundleService._
+
+import scala.concurrent.Future
+import scala.util.{Success, Failure}
+import scala.concurrent.ExecutionContext.Implicits.global
+
+class BundlePricingSpec2 extends UnitSpec {
+    
+    "Cart total from checkout with multiple bundles" should "equal lowest " +
+    "total of all individually processed bundle combinations (permutations)" in {
+
+        val i1 = Item("ItemOne", 1.0)
+        val i2 = Item("ItemTwo", 2.0)
+        val i3 = Item("ItemThree", 2.0)
+        val addQual = Item("SomethingExtra", 1.0)
+    
+        val shoppingList = List((i1, 4), (i2, 3), (i3, 3), (addQual, 1))
+        
+        val cart = addToCart(shoppingList, getCart)
+        
+        val flatPrice2 = bundlePrice(1.75, (i2, 2))()("2 i2 for $1.75")
+        val flatPrice3 = bundlePrice(4.00, (i1, 2),(i3, 2))()("2 i1 and 2 i3 for $4.00")
+        val pctOff = percentPrice(i1, 4, 0.5)()("50% off 4 i1")
+        val fourForOne = forPriceOfQty(i1, 4, 1)()_
+        val dealOfTheDay = fourForOne("i1 4 for price of 1!")
+        
+        val expectedMinCartTotal = 11.75
+        
+        val bundles = List(flatPrice2, flatPrice3, pctOff, dealOfTheDay)
+
+        val cartFut = checkout(cart, bundles)
+        // Expect minCart total from checkout
+        whenReady(cartFut) { cart =>
+            assert(cart.total == expectedMinCartTotal)
+        }
+        
+        // All bundle permutations. total of each perm is >= expected minCart total.
+        val result = (bundles.permutations).toList.forall { bundles =>
+            val cartPerm = applyBundles(cart, bundles)
+            cartPerm.total >= expectedMinCartTotal
+        }
+        
+        // Expect minCart total
+        assert(result)
+    }
+    
+    // Because of cart item quantities only two of the three bundles will qualify
+    // in each bundle list permutation. Because each bundle has a unique bundle
+    // price, each cart returned from apply bundles will have a unique cart total.
+    "Because applyBundles is greedy, with these bundle definitions, " +
+    "each bundle list permutation" should "have a different cart total" in {
+        
+        val item1 = Item("ItemOne", 1.0)
+        val cart = addToCart(item1, 7, getCart)
+        
+        val flatPrice = bundlePrice(1.99, (item1, 3))()("flatPrice")
+        val pctOff = percentPrice(item1, 3, 0.4)()("pctOff")
+        val nForM = forPriceOfQty(item1, 3, 1)()("nForM")
+        
+        val bundlePerm1 = List(flatPrice, pctOff)
+        val bundlePerm2 = List(flatPrice, nForM)
+        val bundlePerm3 = List(pctOff, nForM)
+        val bundlePerm4 = List(pctOff, flatPrice)
+        val bundlePerm5 = List(nForM, flatPrice)
+        val bundlePerm6 = List(nForM, pctOff)
+        
+        val bundlePerms = List(bundlePerm1, bundlePerm2, bundlePerm3,
+                               bundlePerm4, bundlePerm5, bundlePerm6)
+                                                              
+        val result = for{
+            bundles <- bundlePerms
+            cartPerm = applyBundles(cart, bundles)
+        } yield cartPerm.total
+        
+        println(result)
+        
+        /* To prove greedy application of bundles by applyBundles, we show the 
+         * first two bundles of each permutation of three are applied. This means
+         * that the same two of three will be applied twice (i.e. with duplicate 
+         * cart totals), resulting in a list of distinct totals that is 1/2 the 
+         * length of the full permutation list.
+         */
+        assert(result.length / 2 == result.distinct.length)
+    }
+}
+
+
+
+
