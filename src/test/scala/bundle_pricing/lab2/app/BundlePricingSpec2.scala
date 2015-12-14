@@ -52,12 +52,11 @@ class BundlePricingSpec2 extends UnitSpec {
     }
     
     /* 
-     * Each bundle has a distict bundle price. To prove greedy application of 
-     * bundles by applyBundles, we show the first two bundles of each permutation 
-     * of three are applied (due to cart item quantities). This means that the 
-     * same two of three bundles will be applied twice (i.e. with duplicate cart 
-     * totals), resulting in a list of distinct totals that is 1/2 the length of 
-     * the full permutation list.
+     * To prove greedy application of bundles by the applyBundles method, we 
+     * show the first two bundles of each permutation of three are applied (due 
+     * to cart item quantities). Because each bundle has a distict bundle price 
+     * this means that the resulting list of distinct totals will be 1/2 the 
+     * length of the full permutation list.
      */
     "The list size of distinct cart totals" should "be 1/2 the size " +
     "of the full bundle permutations list" in {
