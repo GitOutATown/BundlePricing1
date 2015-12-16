@@ -114,7 +114,16 @@ object CartService {
         Cart(appliedItems)
     }
     
-    // TODO: Replace with parameterized function instead of hard coded types which have to be referenced and maintained in two separate places (i.e. case class and this function).
+    /*
+     *  TODO: Optimization: applyDiscount should only ever be applied once
+     *  to each bundle. Because multiple permutations of bundle order can
+     *  occur, applied bundles (with price and savings calculated) should be
+     *  stored in a map and retrieved on succesive applications.
+     *  TODO: It would be nice to replace discount class with a
+     *  generalized/parameterized function with parameterized function instead 
+     *  of hard coded types which have to be referenced and maintained in two 
+     *  separate places (i.e. case class and this function).
+     */
     private[app] def applyDiscount(bundle: Bundle): Bundle = {
         
         val originalPrice = (for{
